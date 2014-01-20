@@ -6,7 +6,7 @@ setuptools.setup(
     version="0.1.0",
     author="Tom Leach",
     author_email="tom@gc.io",
-    description="Schema validation for Python dicts and lists",
+    description="Powerful schema-based validation of Python dicts",
     license="BSD",
     keywords="validation schema dict list",
     url="http://github.com/gamechanger/schemer",

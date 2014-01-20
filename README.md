@@ -1,6 +1,6 @@
 # Schemer
 
-Schemer is lightweight library for declaratively creating schemas for Python dicts.
+Powerful schema-based validation of Python dicts.
 
 [![build status](https://travis-ci.org/gamechanger/schemer.png?branch=master "Build status")](https://travis-ci.org/gamechanger/schemer)
 
