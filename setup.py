@@ -2,18 +2,15 @@ import setuptools
 
 
 setuptools.setup(
-    name="Mongothon",
-    version="0.6.1",
+    name="Schematic",
+    version="0.1.0",
     author="Tom Leach",
     author_email="tom@gc.io",
-    description="A MongoDB object-document mapping layer for Python",
+    description="Schema validation for Python dicts and lists",
     license="BSD",
-    keywords="mongo mongodb database pymongo odm validation",
-    url="http://github.com/gamechanger/mongothon",
-    packages=["mongothon"],
-    long_description="Mongothon is a MongoDB object-document mapping " +
-                     "API for Python, loosely based on the awesome " +
-                     "mongoose.js library.",
-    install_requires=['pymongo', 'inflection'],
+    keywords="validation schema dict list",
+    url="http://github.com/gamechanger/schematic",
+    packages=["schematic"],
+    long_description="Schematic allows users to declare schemas for Python dicts and lists and then validate actual dicts and lists against those schemas.",
     tests_require=['mock', 'nose']
     )
