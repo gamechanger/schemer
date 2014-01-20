@@ -17,7 +17,7 @@ pip install schemer
 
 # Getting Started
 
-Schemer allows you to declaratively express the a desired structure and contraints of a Python dict in a reusable Schema which itself is declared as a Python dict.
+Schemer allows you to declaratively express the desired structure and contraints of a Python dict in a reusable Schema which itself is declared as a Python dict.
 
 Schemas can then be used to validate specific dict instances and apply default values to them where appropriate.
 
