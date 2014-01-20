@@ -2,7 +2,7 @@
 *.pyc
 build*.egg-info
 *.egg
-Mongothon.egg-info
+Schematic.egg-info
 build
 dist
 env
