@@ -5,7 +5,7 @@ from extension_types import Mixed
 
 
 class Schema(object):
-    """A Schema encapsulates the structure and constraints of a Mongo document."""
+    """A Schema encapsulates the structure and constraints of a dict."""
 
     def __init__(self, doc_spec, strict=True):
         self._doc_spec = doc_spec
