@@ -1,8 +1,8 @@
 """Provides a valid sample set of schemas and documents adhereing to those
 schemas for use in testing."""
 
-from schematic import Schema, Mixed
-from schematic.validators import one_of
+from schemer import Schema, Mixed
+from schemer.validators import one_of
 from datetime import datetime
 
 

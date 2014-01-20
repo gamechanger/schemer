@@ -1,6 +1,6 @@
-from schematic import Schema
-from schematic.exceptions import ValidationException, SchemaFormatException
-from schematic.validators import one_of, lte, gte
+from schemer import Schema
+from schemer.exceptions import ValidationException, SchemaFormatException
+from schemer.validators import one_of, lte, gte
 import unittest
 from mock import patch
 from datetime import datetime

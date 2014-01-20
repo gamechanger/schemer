@@ -1,4 +1,4 @@
-from schematic.validators import one_of, gte, lte, gt, lt, between, length, match, is_email, is_url
+from schemer.validators import one_of, gte, lte, gt, lt, between, length, match, is_email, is_url
 import unittest
 
 

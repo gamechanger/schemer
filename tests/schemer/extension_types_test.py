@@ -1,4 +1,4 @@
-from schematic.extension_types import Mixed
+from schemer.extension_types import Mixed
 import unittest
 
 class TestMixedType(unittest.TestCase):

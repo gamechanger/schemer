@@ -2,7 +2,7 @@
 *.pyc
 build*.egg-info
 *.egg
-Schematic.egg-info
+Schemer.egg-info
 build
 dist
 env
