@@ -3,6 +3,10 @@ import logging
 from exceptions import ValidationException, SchemaFormatException
 from extension_types import Mixed
 
+class Array(object):
+    def __init__(self, contained_type):
+        self.contained_type = contained_type
+
 
 class Schema(object):
     """A Schema encapsulates the structure and constraints of a dict."""
@@ -27,15 +31,16 @@ class Schema(object):
             if field in instance:
                 value = instance[field]
 
-                # recurse into nested collections
-                if isinstance(spec, list):
-                    if isinstance(value, list) and isinstance(spec[0], Schema):
-                        for item in value:
-                            spec[0].apply_defaults(item)
+                field_type = spec['type']
 
                 # recurse into nested docs
-                elif isinstance(spec['type'], Schema) and isinstance(value, dict):
-                    spec['type'].apply_defaults(value)
+                if isinstance(field_type, Schema) and isinstance(value, dict):
+                    field_type.apply_defaults(value)
+
+                elif isinstance(field_type, Array) and isinstance(field_type.contained_type, Schema) and isinstance(value, list):
+                    for item in value:
+                        field_type.contained_type.apply_defaults(item)
+
 
                 # Bailout as we don't want to apply a default
                 continue
@@ -109,8 +114,8 @@ class Schema(object):
                 raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
             return
 
-        elif not isinstance(field_type, type):
-            raise SchemaFormatException("Unsupported field type at {}. Type must be a type or another Schema", path)
+        elif not isinstance(field_type, (type, Array)):
+            raise SchemaFormatException("Unsupported field type at {}. Type must be a type, and Array or another Schema", path)
 
         # Validations should be either a single function or array of functions
         if 'validates' in spec:
@@ -161,24 +166,7 @@ class Schema(object):
 
             path = self._append_path(path_prefix, field)
 
-            # Standard dict-based spec
-            if isinstance(spec, dict):
-                self._validate_value(value, spec, path, errors)
-
-            # An embedded collection
-            elif isinstance(spec, list):
-                if (value is not None):
-                    if not isinstance(value, list):
-                        errors[path] = "Expected a list."
-                        continue
-                    else:
-                        for i, item in enumerate(value):
-                            instance_path = "{}.{}".format(path, i)
-
-                            if isinstance(spec[0], Schema):
-                                spec[0]._validate_instance(item, errors, instance_path)
-                            elif not isinstance(item, spec[0]):
-                                errors[instance_path] = "List item is of incorrect type"
+            self._validate_value(value, spec, path, errors)
 
         # Now loop over each field in the given instance and make sure we don't
         # have any fields not declared in the schema, unless strict mode has been
@@ -200,7 +188,7 @@ class Schema(object):
         # constraint in the process.
         if value is None:
             if field_spec.get('required', False):
-                errors[path] = "%s is required." % path
+                errors[path] = "{} is required.".format(path)
             return
 
         # All fields should have a type
@@ -211,11 +199,23 @@ class Schema(object):
             if isinstance(value, dict):
                 field_type._validate_instance(value, errors, path)
             else:
-                errors[path] = "%s should be an embedded document" % path
+                errors[path] = "{} should be an embedded document".format(path)
             return
 
-        # Otherwise, validate the field
-        if not isinstance(value, field_type):
+        elif isinstance(field_type, Array):
+            if isinstance(value, list):
+                for i, item in enumerate(value):
+                    instance_path = "{}.{}".format(path, i)
+                    if isinstance(field_type.contained_type, Schema):
+                        field_type.contained_type._validate_instance(item, errors, instance_path)
+                    elif not isinstance(item, field_type.contained_type):
+                        errors[instance_path] = "Array item at {} is of incorrect type".format(instance_path)
+                        continue
+            else:
+                errors[path] = "{} should be an embedded array".format(path)
+                return
+
+        elif not isinstance(value, field_type):
             errors[path] = "Field should be of type {}".format(field_type)
             return
 
