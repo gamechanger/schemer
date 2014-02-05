@@ -160,6 +160,10 @@ class TestValidation(unittest.TestCase):
         del self.document['author']
         self.assert_document_paths_invalid(self.document, ['author'])
 
+    def test_missing_required_array_field(self):
+        del self.document['comments']
+        self.assert_document_paths_invalid(self.document, ['comments'])
+
     def test_incorrect_type(self):
         self.document['author'] = 33
         self.assert_document_paths_invalid(self.document, ['author'])

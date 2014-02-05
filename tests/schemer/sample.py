@@ -30,7 +30,7 @@ blog_post_schema = Schema({
         "page_views":       {"type": int, "default": 1}
     }), "required": True},
     "category":         {"type": basestring, "validates": one_of("cooking", "politics")},
-    "comments":         {"type": Array(comment_schema)},
+    "comments":         {"type": Array(comment_schema), "required": True},
     "likes":            {"type": int, "default": 0},
     "creation_date":    {"type": datetime, "default": stubnow},
     "tags":             {"type": Array(basestring), "default": ["blog"]},
