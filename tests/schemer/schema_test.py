@@ -1,4 +1,4 @@
-from schemer import Schema
+from schemer import Schema, Array
 from schemer.exceptions import ValidationException, SchemaFormatException
 from schemer.validators import one_of, lte, gte
 import unittest
@@ -90,13 +90,15 @@ class TestSchemaVerification(unittest.TestCase):
 
         Schema({'num_wheels':{'type':int, 'default':default_fn}})
 
-    def test_valid_schema_with_nesting(self):
-        blog_post_schema
-
-    def test_invalid_nested_collection_with_multiple_schemas(self):
+    def test_spec_wrong_type(self):
         self.assert_spec_invalid(
             {
-                "items": [Schema({"somefield": {"type": int}}), Schema({"other": {"type": int}})]
+                "items": []
+            },
+            'items')
+        self.assert_spec_invalid(
+            {
+                "items": "wrong"
             },
             'items')
 
@@ -111,12 +113,12 @@ class TestSchemaVerification(unittest.TestCase):
 
     def test_nested_collection_of_ints(self):
         Schema({
-            "numbers": [int]
+            "numbers": {"type": Array(int)}
         })
 
     def test_invalid_nested_collection_with_value_not_type(self):
         self.assert_spec_invalid({
-                "items": [1]
+                "items": {"type": Array(1)}
             },
             'items')
 

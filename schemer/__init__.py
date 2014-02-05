@@ -78,19 +78,6 @@ class Schema(object):
             # Standard dict-based spec
             if isinstance(spec, dict):
                 self._verify_field_spec(spec, path)
-
-            # An embedded collection declaration
-            elif isinstance(spec, list):
-                # There should only be a single entry in the list
-                if len(spec) != 1:
-                    raise SchemaFormatException(
-                        "Exactly one type must be declared for the embedded collection at {}",
-                        path)
-
-                # The entry should either be a type, or another Schema
-                if not isinstance(spec[0], type) and not isinstance(spec[0], Schema):
-                    raise SchemaFormatException("The type declaration for embedded collection at {} must be either a type (int, basestring, etc) or another Schema.", path)
-
             else:
                 raise SchemaFormatException("Invalid field definition for {}", path)
 
@@ -114,7 +101,11 @@ class Schema(object):
                 raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
             return
 
-        elif not isinstance(field_type, (type, Array)):
+        elif isinstance(field_type, Array):
+            if not isinstance(field_type.contained_type, (type, Schema, Array)):
+                raise SchemaFormatException("Unsupported field type contained by Array at {}.", path)
+
+        elif not isinstance(field_type, type):
             raise SchemaFormatException("Unsupported field type at {}. Type must be a type, and Array or another Schema", path)
 
         # Validations should be either a single function or array of functions
