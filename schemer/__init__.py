@@ -93,6 +93,22 @@ class Schema(object):
         if 'type' not in spec:
             raise SchemaFormatException("{} has no type declared.", path)
 
+        self._verify_type(spec, path)
+
+        # Validations should be either a single function or array of functions
+        if 'validates' in spec:
+            self._verify_validates(spec, path)
+
+        # Defaults must be of the correct type or a function
+        if 'default' in spec:
+            self._verify_default(spec, path)
+
+        # Only expected spec keys are supported
+        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default'])):
+            raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
+
+    def _verify_type(self, spec, path):
+        """Verify that the 'type' in the spec is valid"""
         field_type = spec['type']
 
         if isinstance(field_type, Schema):
@@ -108,23 +124,6 @@ class Schema(object):
         elif not isinstance(field_type, type):
             raise SchemaFormatException("Unsupported field type at {}. Type must be a type, and Array or another Schema", path)
 
-        # Validations should be either a single function or array of functions
-        if 'validates' in spec:
-            validates = spec['validates']
-
-            if isinstance(validates, list):
-                for validator in validates:
-                    self._verify_validator(validator, path)
-            else:
-                self._verify_validator(validates, path)
-
-        # Defaults must be of the correct type or a function
-        if 'default' in spec:
-            self._verify_default(spec, path)
-
-        # Only expected spec keys are supported
-        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default'])):
-            raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
 
     def _verify_default(self, spec, path):
         """Verifies that the default specified in the given spec is valid."""
@@ -147,6 +146,18 @@ class Schema(object):
         else:
             if not isinstance(default, field_type):
                 raise SchemaFormatException("Default value for {} is not of the nominated type.", path)
+
+
+    def _verify_validates(self, spec, path):
+        """Verify thats the 'validates' argument is valid."""
+        validates = spec['validates']
+
+        if isinstance(validates, list):
+            for validator in validates:
+                self._verify_validator(validator, path)
+        else:
+            self._verify_validator(validates, path)
+
 
     def _verify_validator(self, validator, path):
         """Verifies that a given validator associated with the field at the given path is legitimate."""
