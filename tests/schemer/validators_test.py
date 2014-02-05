@@ -1,5 +1,5 @@
 from schemer.validators import (one_of, gte, lte, gt, lt, between,
-    length, match, is_email, is_url, each_item)
+    length, match, is_email, is_url, each_item, distinct)
 import unittest
 
 
@@ -167,3 +167,16 @@ class TestEachItem(unittest.TestCase):
         self.assertEqual(
             "6 is not less than 6",
             self.validator([3, 6]))
+
+
+class TestDistinct(unittest.TestCase):
+    def setUp(self):
+        self.validator = distinct()
+
+    def test_valid(self):
+        self.assertIsNone(self.validator([1, 2, 3]))
+
+    def test_invalid(self):
+        self.assertEqual(
+            "[2, 2, 3] is not a distinct set of values",
+            self.validator([2, 2, 3]))

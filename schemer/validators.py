@@ -159,3 +159,14 @@ def each_item(*validators):
         return None
     return validate
 
+
+def distinct():
+    """
+    Validates that all items in the given field list value are distinct,
+    i.e. that the list contains no duplicates.
+    """
+    def validate(value):
+        if value != list(set(value)):
+            return e("{} is not a distinct set of values", value)
+    return validate
+
