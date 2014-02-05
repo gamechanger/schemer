@@ -82,8 +82,82 @@ schema = Schema({"name": {"type": basestring, "required": True}})
 By default all fields are _not_ required.
 
 
+### Nested schemas
+Schemas may be nested within one another in order to describe the structure of documents containing deep graphs.
+
+Nested can either be declared inline:
+```python
+blog_post_schema = Schema({
+    "author":   {"type": Schema({
+        "first_name": {"type": basestring},
+        "last_name": {"type": basestring}})},
+    "title":    {"type": basestring},
+    "content":  {"type": basestring}
+})
+
+```
+or declared in isolation and then referenced (and potentially reused between multiple parent schemas):
+```python
+name_schema = Schema({
+    "first_name":   {"type": basestring},
+    "last_name":    {"type": basestring}
+})
+
+blog_post_schema = Schema({
+    "author":   {"type": name_schema},
+    "title":    {"type": basestring},
+    "content":  {"type": basestring}
+})
+
+comment_schema = Schema({
+    "author":   {"type": name_schema, "required":True},
+    "comment":  {"type": base_string}
+})
+
+```
+In each case the nested schema is provided as the `type` parameter in the parent field's spec and can be declared as `"required"=True` if so desired. Any validation present within the nested schema is applied wherever the schema
+is used.
+
+
+### Embedded arrays
+As well as nesting schemas directly under fields, Schemer supports embedded arrays within documents. To declare an embedded array, simply set the `type` of the field to `Array` providing the type of entries
+in the array as an init arg:
+```python
+line_item_schema = Schema({
+    "price":        {"type": int, "required": True}
+    "item_name":    {"type": basestring, "required": True}
+})
+
+order_schema = Schema({
+    "line_items":   {"type": Array(line_item_schema)}
+    "total_due":    {"type": int}
+})
+```
+Simple primitive types can be embedded as well as full schemas:
+```python
+bookmark_schema = Schema({
+    "url":      {"type": basestring},
+    "tags":     {"type": Array(basestring)}
+})
+```
+Just like other fields, embedded arrays can have defaults:
+```python
+bookmark_schema = Schema({
+    "url":      {"type": basestring},
+    "tags":     {"type": Array(basestring), "default": []}
+})
+```
+...and validation:
+```python
+bookmark_schema = Schema({
+    "url":      {"type": basestring},
+    "tags":     {"type": Array(basestring), "validates":[each_item(length(min=1)),
+                                                         distinct()]}
+})
+```
+
 ### Defaults
-Schemas allow you to specify default values for fields which may be applied in the event a value is not provided in a given document.
+Schemas allow you to specify default values for fields which may be applied to a given document.
 A default can either be specified as literal:
 ```python
 schema = Schema({"num_wheels": {"type": int, "default": 4}})
@@ -149,63 +223,6 @@ def startswith(prefix):
 schema = Schema({"full_name": {"type": basestring, "validates": startswith("Mr")}})
 ```
 
-### Nested schemas
-Schemas may be nested within one another in order to describe the structure of documents containing deep graphs.
-
-Nested can either be declared inline:
-```python
-blog_post_schema = Schema({
-    "author":   {"type": Schema({
-        "first_name": {"type": basestring},
-        "last_name": {"type": basestring}})},
-    "title":    {"type": basestring},
-    "content":  {"type": basestring}
-})
-
-```
-or declared in isolation and then referenced (and potentially reused between multiple parent schemas):
-```python
-name_schema = Schema({
-    "first_name":   {"type": basestring},
-    "last_name":    {"type": basestring}
-})
-
-blog_post_schema = Schema({
-    "author":   {"type": name_schema},
-    "title":    {"type": basestring},
-    "content":  {"type": basestring}
-})
-
-comment_schema = Schema({
-    "author":   {"type": name_schema, "required":True},
-    "comment":  {"type": base_string}
-})
-
-```
-In each case the nested schema is provided as the `type` parameter in the parent field's spec and can be declared as `"required"=True` if so desired. Any validation present within the nested schema is applied wherever the schema
-is used.
-
-
-### Embedded collections
-As well as nesting schemas directly under fields, Schemer supports embedded collections within documents. To declare an embedded collection, simply declare the type of the embedded items using Python list syntax:
-```python
-line_item_schema = Schema({
-    "price":        {"type": int, "required": True}
-    "item_name":    {"type": basestring, "required": True}
-})
-
-order_schema = Schema({
-    "line_items":   [line_item_schema]
-    "total_due":    {"type": int}
-})
-```
-Simple primitive types can be embedded as well as full schemas:
-```python
-bookmark_schema = Schema({
-    "url":      {"type": basestring},
-    "tags":     [basestring]
-})
-```
 
 # Developing and Contributing
 
