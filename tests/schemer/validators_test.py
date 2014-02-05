@@ -1,4 +1,5 @@
-from schemer.validators import one_of, gte, lte, gt, lt, between, length, match, is_email, is_url
+from schemer.validators import (one_of, gte, lte, gt, lt, between,
+    length, match, is_email, is_url, each_item)
 import unittest
 
 
@@ -153,3 +154,16 @@ class TestIsUrl(unittest.TestCase):
         self.assertEqual(
             "'notaurl' is not a valid URL",
             self.validator("notaurl"))
+
+
+class TestEachItem(unittest.TestCase):
+    def setUp(self):
+        self.validator = each_item(gt(2), lt(6))
+
+    def test_valid(self):
+        self.assertIsNone(self.validator([3, 4]))
+
+    def test_invalid(self):
+        self.assertEqual(
+            "6 is not less than 6",
+            self.validator([3, 6]))
