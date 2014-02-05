@@ -1,6 +1,6 @@
 from schemer import Schema, Array
 from schemer.exceptions import ValidationException, SchemaFormatException
-from schemer.validators import one_of, lte, gte
+from schemer.validators import one_of, lte, gte, length
 import unittest
 from mock import patch
 from datetime import datetime
@@ -148,6 +148,10 @@ class TestSchemaVerification(unittest.TestCase):
             },
             'items')
 
+    def test_array_validation(self):
+        Schema({
+            "fruit": {'type': Array(basestring), "validates": length(1, 2)}
+        })
 
 
     @patch('logging.warning')
@@ -222,6 +226,10 @@ class TestValidation(unittest.TestCase):
     def test_disallows_fields_not_in_schema(self):
         self.document['something'] = "extra"
         self.assert_document_paths_invalid(self.document, ['something'])
+
+    def test_validation_of_array(self):
+        self.document['tags'] = []
+        self.assert_document_paths_invalid(self.document, ['tags'])
 
 
 class TestDefaultApplication(unittest.TestCase):

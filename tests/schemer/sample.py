@@ -2,7 +2,7 @@
 schemas for use in testing."""
 
 from schemer import Schema, Mixed, Array
-from schemer.validators import one_of
+from schemer.validators import one_of, length
 from datetime import datetime
 
 
@@ -33,7 +33,7 @@ blog_post_schema = Schema({
     "comments":         {"type": Array(comment_schema), "required": True},
     "likes":            {"type": int, "default": 0},
     "creation_date":    {"type": datetime, "default": stubnow},
-    "tags":             {"type": Array(basestring), "default": ["blog"]},
+    "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
 })
