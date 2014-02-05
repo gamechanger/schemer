@@ -5,7 +5,7 @@ class SchemaFormatException(Exception):
     a schema."""
 
     def __init__(self, message, path):
-        self._message = message.format(path)
+        self._message = message.format('\"{}\"'.format(path))
         self._path = path
 
     @property
