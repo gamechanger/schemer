@@ -6,12 +6,15 @@ def e(string, *args):
     return string.format(*[pformat(arg) for arg in args])
 
 def one_of(*args):
+    """
+    Validates that a field value matches one of the values
+    given to this validator.
+    """
     if len(args) == 1 and isinstance(args[0], list):
         items = args[0]
     else:
         items = list(args)
 
-    """Validates that the field value is in the given list."""
     def validate(value):
         if not value in items:
             return e("{} is not in the list {}", value, items)
@@ -19,6 +22,10 @@ def one_of(*args):
 
 
 def gte(min_value):
+    """
+    Validates that a field value is greater than or equal to the
+    value given to this validator.
+    """
     def validate(value):
         if value < min_value:
             return e("{} is not greater than or equal to {}", value, min_value)
@@ -26,6 +33,10 @@ def gte(min_value):
 
 
 def lte(max_value):
+    """
+    Validates that a field value is less than or equal to the
+    value given to this validator.
+    """
     def validate(value):
         if value > max_value:
             return e("{} is not less than or equal to {}", value, max_value)
@@ -33,6 +44,10 @@ def lte(max_value):
 
 
 def gt(gt_value):
+    """
+    Validates that a field value is greater than the
+    value given to this validator.
+    """
     def validate(value):
         if value <= gt_value:
             return e("{} is not greater than {}", value, gt_value)
@@ -40,6 +55,10 @@ def gt(gt_value):
 
 
 def lt(lt_value):
+    """
+    Validates that a field value is less than the
+    value given to this validator.
+    """
     def validate(value):
         if value >= lt_value:
             return e("{} is not less than {}", value, lt_value)
@@ -47,6 +66,10 @@ def lt(lt_value):
 
 
 def between(min_value, max_value):
+    """
+    Validates that a field value is between the two values
+    given to this validator.
+    """
     def validate(value):
         if value < min_value:
             return e("{} is not greater than or equal to {}",
@@ -58,6 +81,11 @@ def between(min_value, max_value):
 
 
 def length(min=None, max=None):
+    """
+    Validates that a field value's length is between the bounds given to this
+    validator.
+    """
+
     def validate(value):
         if min and len(value) < min:
             return e("{} does not have a length of at least {}", value, min)
@@ -67,6 +95,9 @@ def length(min=None, max=None):
 
 
 def match(pattern):
+    """
+    Validates that a field value matches the regex given to this validator.
+    """
     regex = re.compile(pattern)
 
     def validate(value):
@@ -75,6 +106,9 @@ def match(pattern):
     return validate
 
 def is_email():
+    """
+    Validates that a fields value is a valid email address.
+    """
     # Stolen from Django
     regex = re.compile(
         r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"  # dot-atom
@@ -89,6 +123,9 @@ def is_email():
     return validate
 
 def is_url():
+    """
+    Validates that a fields value is a valid URL.
+    """
     # Stolen from Django
     regex = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
