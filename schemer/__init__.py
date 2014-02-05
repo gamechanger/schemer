@@ -228,7 +228,7 @@ class Schema(object):
         elif isinstance(field_type, Array):
             if isinstance(value, list):
                 for i, item in enumerate(value):
-                    instance_path = "{}.{}".format(path, i)
+                    instance_path = self._append_path(path, i)
                     if isinstance(field_type.contained_type, Schema):
                         field_type.contained_type._validate_instance(item, errors, instance_path)
                     elif not isinstance(item, field_type.contained_type):
