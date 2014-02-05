@@ -119,13 +119,34 @@ class Schema(object):
                 self._verify_validator(validates, path)
 
         # Defaults must be of the correct type or a function
-        if 'default' in spec and not (isinstance(spec['default'], field_type) or callable(spec['default'])):
-            raise SchemaFormatException("Default value for {} is not of the nominated type.", path)
+        if 'default' in spec:
+            self._verify_default(spec, path)
 
         # Only expected spec keys are supported
         if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default'])):
             raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
 
+    def _verify_default(self, spec, path):
+        """Verifies that the default specified in the given spec is valid."""
+        field_type = spec['type']
+        default = spec['default']
+
+        # If it's a function there's nothing we can really do except assume its valid
+        if callable(default):
+            return
+
+        if isinstance(field_type, Array):
+            # Verify we'd got a list as our default
+            if not isinstance(default, list):
+                raise SchemaFormatException("Default value for Array at {} is not a list of values.", path)
+
+            # Ensure the contents are of the correct type
+            for i, item in enumerate(default):
+                if not isinstance(item, field_type.contained_type):
+                    raise SchemaFormatException("Not all items in the default list for the Array field at {} are of the correct type.", path)
+        else:
+            if not isinstance(default, field_type):
+                raise SchemaFormatException("Default value for {} is not of the nominated type.", path)
 
     def _verify_validator(self, validator, path):
         """Verifies that a given validator associated with the field at the given path is legitimate."""

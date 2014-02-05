@@ -33,7 +33,7 @@ blog_post_schema = Schema({
     "comments":         {"type": Array(comment_schema)},
     "likes":            {"type": int, "default": 0},
     "creation_date":    {"type": datetime, "default": stubnow},
-    "tags":             {"type": Array(basestring)},
+    "tags":             {"type": Array(basestring), "default": ["blog"]},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
 })
