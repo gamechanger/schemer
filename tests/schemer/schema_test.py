@@ -111,6 +111,17 @@ class TestSchemaVerification(unittest.TestCase):
             },
             'content')
 
+    def test_nested_schema_cannot_have_validation(self):
+        def some_func():
+            pass
+        self.assert_spec_invalid(
+            {
+                "content": {'type': Schema({
+                    "somefield": {"type": int}
+                }), "validates": some_func}
+            },
+            'content')
+
     def test_nested_collection_of_ints(self):
         Schema({
             "numbers": {"type": Array(int)}
