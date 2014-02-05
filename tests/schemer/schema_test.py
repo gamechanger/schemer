@@ -122,31 +122,33 @@ class TestSchemaVerification(unittest.TestCase):
             },
             'content')
 
-    def test_nested_collection_of_ints(self):
+    def test_array_of_ints(self):
         Schema({
             "numbers": {"type": Array(int)}
         })
 
-    def test_nested_collection_of_strings_with_default(self):
+    def test_array_of_strings_with_default(self):
         Schema({
             "fruit": {'type': Array(basestring), "default": ['apple', 'orange']}
         })
 
-    def test_nested_collection_of_strings_with_invalid_default(self):
+    def test_array_of_strings_with_invalid_default(self):
         self.assert_spec_invalid({
             "fruit": {'type': Array(basestring), "default": 'not a list'}
         }, 'fruit')
 
-    def test_nested_collection_of_strings_with_invalid_default_content(self):
+    def test_array_of_strings_with_invalid_default_content(self):
         self.assert_spec_invalid({
             "nums": {'type': Array(int), "default": ['not an int']}
         }, 'nums')
 
-    def test_invalid_nested_collection_with_value_not_type(self):
+    def test_invalid_array_with_value_not_type(self):
         self.assert_spec_invalid({
                 "items": {"type": Array(1)}
             },
             'items')
+
+
 
     @patch('logging.warning')
     def test_strict_mode_off_allows_fields_not_in_schema(self, warning):
@@ -259,7 +261,7 @@ class TestDefaultApplication(unittest.TestCase):
         blog_post_schema.apply_defaults(self.document)
         self.assertEqual(1, self.document['content']['page_views'])
 
-    def test_apply_default_value_in_nested_collection(self):
+    def test_apply_default_value_in_array(self):
         blog_post_schema.apply_defaults(self.document)
         self.assertEqual(0, self.document['comments'][0]['votes'])
         self.assertEqual(0, self.document['comments'][1]['votes'])
