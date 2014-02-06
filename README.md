@@ -19,11 +19,11 @@ pip install schemer
 
 Schemer allows you to declaratively express the desired structure and contraints of a Python dict in a reusable Schema which itself is declared as a Python dict.
 
-Schemas can then be used to validate specific dict instances and apply default values to them where appropriate.
+Schemas can then be used to validate specific `dict` instances and apply default values to them where appropriate.
 
 Schemas can be easily nested within one another providing powerful composability of document structures.
 
-Though Schemer was originally designed to validate Mongo documents and was extracted from [Mongothon](http://github.com/gamechanger/mongothon), it is completely agnostic of use case.
+Though Schemer was originally designed to validate Mongo documents and was extracted from [Mongothon](http://github.com/gamechanger/mongothon), it is now completely agnostic of use case.
 
 ## Example
 
@@ -37,7 +37,7 @@ car_schema = Schema({
 })
 ```
 
-Validate a dict
+Once you have your schema you can use it to validate a dict:
 ```python
 car = {
     "make":         "Ford",
@@ -59,11 +59,11 @@ except ValidationException:
 
 ### Types
 
-Each field in a schema must be given a type by adding a `"type"` key to the field spec dict. For example, this schema declares a single `"name"` field with a type of `basestring`:
+Each field in a schema must be given a type by adding a `"type"` key to the field spec `dict`. For example, this schema declares a single `"name"` field with a type of `basestring`:
 ```python
 schema = Schema({"name": {"type": basestring}})
 ```
-The `"type"` can be any Python `type` which responds to `instanceof()`, or another `Schema` for schema-nesting (see below).
+The `"type"` can be any Python `type` which responds to `isinstance()`, or another `Schema` for schema-nesting (see below).
 
 #### The "Mixed" type
 The `Mixed` type allows you to indicate that a field supports values of multiple types.
@@ -72,87 +72,20 @@ The `Mixed` type allows you to indicate that a field supports values of multiple
 schema = Schema({"external_id": {"type": Mixed(basestring, int)}})  # only basestring, int and ObjectId are supported
 ```
 
-If you attempt to save a model containing a value of the wrong type for a given a field a `ValidationException` will be thrown.
+When you validate a `dict` containing a value of the wrong type for a given a field a `ValidationException` will be thrown describing the error.
 
 ### Mandatory fields
-You can require a field to be present in a document by adding `"required": True` to the Schema:
+You can require a field to be present in a `dict` by adding `"required": True` to the Schema:
 ```python
 schema = Schema({"name": {"type": basestring, "required": True}})
 ```
 By default all fields are _not_ required.
 
 
-### Defaults
-Schemas allow you to specify default values for fields which may be applied in the event a value is not provided in a given document.
-A default can either be specified as literal:
-```python
-schema = Schema({"num_wheels": {"type": int, "default": 4}})
-```
-or as a reference to parameterless function which will be called at the point the document is saved:
-```python
-import datetime
-schema = Schema({"created_date": {"type": datetime, "default": datetime.now}})
-```
-Defaults can be applied to a given document by using the `apply_defaults()` method:
-```python
-schema = Schema({"num_wheels": {"type": int, "default": 4}})
-car = {}
-schema.apply_defaults(car)
-assert car == {"num_wheels": 4}
-```
-
-
-### Validation
-Schemer allows you to specify validation for a field using the `"validates"` key in the field spec.
-You can specify a single validator:
-```python
-schema = Schema({"color": {"type": basestring, "validates": one_of("red", "green", "blue")}})
-```
-or multiple validators:
-```python
-schema = Schema({"num_wheels": {"type": int, "validates": [gte(0), lte(6)]}})
-```
-
-#### Provided validators
-Schemer provides the following validators out-of-the-box:
-```python
-# Validator                         # Validates that the field...
-gte(value)                          # is greater than or equal to the given value
-lte(value)                          # is less than or equal to the given value
-gt(value)                           # is greater than the given value
-lt(value)                           # is less than the given value
-between(min_value, max_value)       # is between the given min and max values
-length(min_length, [max_length])    # is at least the given min length and (optionally) at most the given max length
-match(pattern)                      # matches the given regex pattern
-one_of(values...)                   # is equal to one of the given values
-is_url()                            # is a valid URL
-is_email()                          # is a valid email address
-```
-
-#### Creating custom validators
-In addition to the provided validators it's easy to create your own custom validators.
-To create a custom validator:
- - declare a function which accepts any arguments you want to provide to the validation algorithm
- - the function should itself return a function which will ultimately be called by Schemer when validating a field value. The function should:
-    - accept a single argument - the field value being validated
-    - return nothing if the given value is valid
-    - return a string describing the validation error if the value is invalid
-
-Here's the declaration of an example custom validator:
-```python
-def startswith(prefix):
-    def validate(value):
-        if not value.startswith(prefix):
-            return "String must start with %s" % prefix
-
-# Usage:
-schema = Schema({"full_name": {"type": basestring, "validates": startswith("Mr")}})
-```
-
 ### Nested schemas
-Schemas may be nested within one another in order to describe the structure of documents containing deep graphs.
+Schemas may be nested within one another in order to describe the structure of `dict`s containing deep graphs.
 
-Nested can either be declared inline:
+Nested schemas can either be declared inline:
 ```python
 blog_post_schema = Schema({
     "author":   {"type": Schema({
@@ -186,8 +119,9 @@ In each case the nested schema is provided as the `type` parameter in the parent
 is used.
 
 
-### Embedded collections
-As well as nesting schemas directly under fields, Schemer supports embedded collections within documents. To declare an embedded collection, simply declare the type of the embedded items using Python list syntax:
+### Embedded arrays
+As well as nesting schemas directly under fields, Schemer supports embedding `list`s within `dict`s. To declare an embedded array, simply set the `type` of the field to `Array` providing the type of entries
+in the array as an init arg:
 ```python
 line_item_schema = Schema({
     "price":        {"type": int, "required": True}
@@ -195,7 +129,7 @@ line_item_schema = Schema({
 })
 
 order_schema = Schema({
-    "line_items":   [line_item_schema]
+    "line_items":   {"type": Array(line_item_schema)}
     "total_due":    {"type": int}
 })
 ```
@@ -203,8 +137,112 @@ Simple primitive types can be embedded as well as full schemas:
 ```python
 bookmark_schema = Schema({
     "url":      {"type": basestring},
-    "tags":     [basestring]
+    "tags":     {"type": Array(basestring)}
 })
+```
+Just like other fields, embedded arrays can have defaults (see below):
+```python
+bookmark_schema = Schema({
+    "url":      {"type": basestring},
+    "tags":     {"type": Array(basestring), "default": []}
+})
+```
+...and validation (see below):
+```python
+bookmark_schema = Schema({
+    "url":      {"type": basestring},
+    "tags":     {"type": Array(basestring), "validates":[each_item(length(min=1)),
+                                                         distinct()]}
+})
+```
+
+### Defaults
+Schemas allow you to specify default values for fields which may be applied to a given document.
+A default can either be specified as literal:
+```python
+schema = Schema({"num_wheels": {"type": int, "default": 4}})
+```
+or as a reference to parameterless function which will be called at the point the default is applied:
+```python
+import datetime
+schema = Schema({"created_date": {"type": datetime, "default": datetime.utcnow}})
+```
+Defaults can be applied to a given document by using the `apply_defaults()` method:
+```python
+schema = Schema({"num_wheels": {"type": int, "default": 4}})
+car = {}
+schema.apply_defaults(car)
+assert car == {"num_wheels": 4}
+```
+
+
+### Validation
+Schemer allows you to specify further validation for a field using the `"validates"` key in the field spec.
+You can specify a single validator:
+```python
+schema = Schema({"color": {"type": basestring, "validates": one_of("red", "green", "blue")}})
+```
+or multiple validators:
+```python
+schema = Schema({"num_wheels": {"type": int, "validates": [gte(0), lte(6)]}})
+```
+
+
+#### Provided validators
+Schemer provides the following validators out-of-the-box:
+
+| Validator                           | Works with type(s)              | Validates the field... |
+| ----------------------------------- | ------------------------------- |----------------------- |
+| `gte(value)`                        | Any                             | is greater than or equal to the given value |
+| `lte(value)`                        | Any                             | is less than or equal to the given value |
+| `gt(value)`                         | Any                             | is greater than the given value |
+| `lt(value)`                         | Any                             | is less than the given value |
+| `between(min_value, max_value)`     | Any                             | is between the given min and max values |
+| `length(min_length, [max_length])`  | Sequence types (`str`, `list`, etc) | is at least the given min length and (optionally) at most the given max length |
+| `match(pattern)`                    | `basestring`, `str`, `unicode`        | is matches the given regex pattern |
+| `one_of(*values)`                   | `basestring`, `str`, `unicode`        | is equal to one of the given values |
+| `is_url()`                          | `basestring`, `str`, `unicode`        | is a valid URL |
+| `is_email()`                        | `basestring`, `str`, `unicode`        | is a valid email address |
+| `distinct()`                        | `list`                            | contains distinct values |
+| `each_item(*validators)`            | `list`                           | by validating each contained item with the given validators. |
+
+
+#### Creating custom validators
+In addition to the provided validators it's easy to create your own custom validators.
+To create a custom validator:
+ - declare a function which accepts any arguments you want to provide to the validation algorithm
+ - the function should itself return a function which will ultimately be called by Schemer when validating a field value. The function should:
+    - accept a single argument - the field value being validated
+    - return nothing if the given value is valid
+    - return a string describing the validation error if the value is invalid
+
+Here's the declaration of an example custom validator:
+```python
+def startswith(prefix):
+    def validate(value):
+        if not value.startswith(prefix):
+            return "String must start with %s" % prefix
+
+# Usage:
+schema = Schema({"full_name": {"type": basestring, "validates": startswith("Mr")}})
+```
+
+## Validating `dict`s
+
+To validate a given dict, using all the constraints of the schema as described above, simply call `validate()` on the `Schema` passing the `dict` to test:
+
+```python
+schema.validate(mydict)
+```
+
+If the `dict` is found to be valid then this call will return without issue. If the dict is found to be invalid then a `ValidationException` will be thrown. This exception can be inspected for details of the failures:
+
+```python
+try:
+    schema.validate(my_dict)
+except ValidationException, e:
+    for path, error in e.errors.iteritems():
+        print "Error found for {}: {}".format(path, error)
 ```
 
 # Developing and Contributing

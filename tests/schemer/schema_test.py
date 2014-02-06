@@ -1,6 +1,6 @@
-from schemer import Schema
+from schemer import Schema, Array
 from schemer.exceptions import ValidationException, SchemaFormatException
-from schemer.validators import one_of, lte, gte
+from schemer.validators import one_of, lte, gte, length
 import unittest
 from mock import patch
 from datetime import datetime
@@ -90,13 +90,15 @@ class TestSchemaVerification(unittest.TestCase):
 
         Schema({'num_wheels':{'type':int, 'default':default_fn}})
 
-    def test_valid_schema_with_nesting(self):
-        blog_post_schema
-
-    def test_invalid_nested_collection_with_multiple_schemas(self):
+    def test_spec_wrong_type(self):
         self.assert_spec_invalid(
             {
-                "items": [Schema({"somefield": {"type": int}}), Schema({"other": {"type": int}})]
+                "items": []
+            },
+            'items')
+        self.assert_spec_invalid(
+            {
+                "items": "wrong"
             },
             'items')
 
@@ -109,16 +111,47 @@ class TestSchemaVerification(unittest.TestCase):
             },
             'content')
 
-    def test_nested_collection_of_ints(self):
+    def test_nested_schema_cannot_have_validation(self):
+        def some_func():
+            pass
+        self.assert_spec_invalid(
+            {
+                "content": {'type': Schema({
+                    "somefield": {"type": int}
+                }), "validates": some_func}
+            },
+            'content')
+
+    def test_array_of_ints(self):
         Schema({
-            "numbers": [int]
+            "numbers": {"type": Array(int)}
         })
 
-    def test_invalid_nested_collection_with_value_not_type(self):
+    def test_array_of_strings_with_default(self):
+        Schema({
+            "fruit": {'type': Array(basestring), "default": ['apple', 'orange']}
+        })
+
+    def test_array_of_strings_with_invalid_default(self):
         self.assert_spec_invalid({
-                "items": [1]
+            "fruit": {'type': Array(basestring), "default": 'not a list'}
+        }, 'fruit')
+
+    def test_array_of_strings_with_invalid_default_content(self):
+        self.assert_spec_invalid({
+            "nums": {'type': Array(int), "default": ['not an int']}
+        }, 'nums')
+
+    def test_invalid_array_with_value_not_type(self):
+        self.assert_spec_invalid({
+                "items": {"type": Array(1)}
             },
             'items')
+
+    def test_array_validation(self):
+        Schema({
+            "fruit": {'type': Array(basestring), "validates": length(1, 2)}
+        })
 
 
     @patch('logging.warning')
@@ -143,6 +176,10 @@ class TestValidation(unittest.TestCase):
     def test_missing_required_field(self):
         del self.document['author']
         self.assert_document_paths_invalid(self.document, ['author'])
+
+    def test_missing_required_array_field(self):
+        del self.document['comments']
+        self.assert_document_paths_invalid(self.document, ['comments'])
 
     def test_incorrect_type(self):
         self.document['author'] = 33
@@ -190,6 +227,10 @@ class TestValidation(unittest.TestCase):
         self.document['something'] = "extra"
         self.assert_document_paths_invalid(self.document, ['something'])
 
+    def test_validation_of_array(self):
+        self.document['tags'] = []
+        self.assert_document_paths_invalid(self.document, ['tags'])
+
 
 class TestDefaultApplication(unittest.TestCase):
     def setUp(self):
@@ -228,10 +269,14 @@ class TestDefaultApplication(unittest.TestCase):
         blog_post_schema.apply_defaults(self.document)
         self.assertEqual(1, self.document['content']['page_views'])
 
-    def test_apply_default_value_in_nested_collection(self):
+    def test_apply_default_value_in_array(self):
         blog_post_schema.apply_defaults(self.document)
         self.assertEqual(0, self.document['comments'][0]['votes'])
         self.assertEqual(0, self.document['comments'][1]['votes'])
+
+    def test_apply_default_value_for_array(self):
+        blog_post_schema.apply_defaults(self.document)
+        self.assertEqual(['blog'], self.document['tags'])
 
     def test_default_value_does_not_overwrite_existing(self):
         self.document['likes'] = 35

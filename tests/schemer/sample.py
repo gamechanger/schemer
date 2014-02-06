@@ -1,8 +1,8 @@
 """Provides a valid sample set of schemas and documents adhereing to those
 schemas for use in testing."""
 
-from schemer import Schema, Mixed
-from schemer.validators import one_of
+from schemer import Schema, Mixed, Array
+from schemer.validators import one_of, length
 from datetime import datetime
 
 
@@ -29,11 +29,11 @@ blog_post_schema = Schema({
         "text":             {"type": basestring, "required": True},
         "page_views":       {"type": int, "default": 1}
     }), "required": True},
-    "category":         {"type": basestring, "validates":one_of("cooking", "politics")},
-    "comments":         [comment_schema],
+    "category":         {"type": basestring, "validates": one_of("cooking", "politics")},
+    "comments":         {"type": Array(comment_schema), "required": True},
     "likes":            {"type": int, "default": 0},
     "creation_date":    {"type": datetime, "default": stubnow},
-    "tags":             [basestring],
+    "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
 })
