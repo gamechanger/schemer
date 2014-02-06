@@ -206,7 +206,6 @@ Schemer provides the following validators out-of-the-box:
 | `distinct()`                        | `list`                            | contains distinct values |
 | `each_item(*validators)`            | `list`                           | by validating each contained item with the given validators. |
 
-```
 
 #### Creating custom validators
 In addition to the provided validators it's easy to create your own custom validators.
