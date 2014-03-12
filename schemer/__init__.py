@@ -1,7 +1,7 @@
 from inspect import getargspec
-import logging
 from exceptions import ValidationException, SchemaFormatException
 from extension_types import Mixed
+
 
 class Array(object):
     def __init__(self, contained_type):
@@ -195,12 +195,8 @@ class Schema(object):
         # have any fields not declared in the schema, unless strict mode has been
         # explicitly disabled.
         for field in instance:
-            if field not in self.doc_spec:
-                if self._strict:
-                    errors[self._append_path(path_prefix, field)] = "Unexpected document field not present in schema"
-                else:
-                    logging.warning("Unexpected document field not present in schema: {}".format(self._append_path(path_prefix, field)))
-
+            if field not in self.doc_spec and self._strict:
+                errors[self._append_path(path_prefix, field)] = "Unexpected document field not present in schema"
 
     def _validate_value(self, value, field_spec, path, errors):
         """Validates that the given field value is valid given the associated

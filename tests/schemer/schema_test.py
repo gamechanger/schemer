@@ -154,13 +154,6 @@ class TestSchemaVerification(unittest.TestCase):
         })
 
 
-    @patch('logging.warning')
-    def test_strict_mode_off_allows_fields_not_in_schema(self, warning):
-        schema = Schema({'expected_field': {'type': int}}, strict=False)
-        schema.validate({'unexpected_field': 44})
-        warning.assert_called_once_with('Unexpected document field not present in schema: unexpected_field')
-
-
 class TestValidation(unittest.TestCase):
     def setUp(self):
         self.document = valid_doc()
