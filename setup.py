@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="Schemer",
-    version="0.2.0",
+    version="0.2.1",
     author="Tom Leach",
     author_email="tom@gc.io",
     description="Powerful schema-based validation of Python dicts",
