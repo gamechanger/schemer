@@ -194,9 +194,10 @@ class Schema(object):
         # Now loop over each field in the given instance and make sure we don't
         # have any fields not declared in the schema, unless strict mode has been
         # explicitly disabled.
-        for field in instance:
-            if field not in self.doc_spec and self._strict:
-                errors[self._append_path(path_prefix, field)] = "Unexpected document field not present in schema"
+        if self._strict:
+            for field in instance:
+                if field not in self.doc_spec:
+                    errors[self._append_path(path_prefix, field)] = "Unexpected document field not present in schema"
 
     def _validate_value(self, value, field_spec, path, errors):
         """Validates that the given field value is valid given the associated
