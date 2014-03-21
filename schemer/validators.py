@@ -166,7 +166,8 @@ def distinct():
     i.e. that the list contains no duplicates.
     """
     def validate(value):
-        if value != list(set(value)):
-            return e("{} is not a distinct set of values", value)
+        for i, item in enumerate(value):
+            if item in value[i+1:]:
+                return e("{} is not a distinct set of values", value)
     return validate
 
