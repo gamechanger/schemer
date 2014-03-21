@@ -1,6 +1,5 @@
 import re
 from pprint import pformat
-from copy import deepcopy
 
 def e(string, *args):
     """Function which formats error messages."""
@@ -167,8 +166,8 @@ def distinct():
     i.e. that the list contains no duplicates.
     """
     def validate(value):
-        for i in range(len(value)):
-            if value[i] in value[i+1:]:
+        for i, item in enumerate(value):
+            if item in value[i+1:]:
                 return e("{} is not a distinct set of values", value)
     return validate
 
