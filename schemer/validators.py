@@ -167,10 +167,8 @@ def distinct():
     i.e. that the list contains no duplicates.
     """
     def validate(value):
-        value_copy = deepcopy(value)
-        while value_copy:
-            item = value_copy.pop()
-            if item in value_copy:
-                return e("{} is not a distinct set of values", value)
+        for i in range(len(value)):
+            if value[i] in value[i+1:]:
+                print "{} is not a distinct set of values".format(value)
     return validate
 
