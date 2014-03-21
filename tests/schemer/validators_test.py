@@ -176,7 +176,16 @@ class TestDistinct(unittest.TestCase):
     def test_valid(self):
         self.assertIsNone(self.validator([1, 2, 3]))
 
+    def test_with_list_of_dicts(self):
+        self.assertIsNone(self.validator([{'a': 1}, {'a': 2}, {'a': 3}]))
+
     def test_invalid(self):
         self.assertEqual(
             "[2, 2, 3] is not a distinct set of values",
             self.validator([2, 2, 3]))
+
+    def test_invalid_with_dicts(self):
+        self.assertEqual(
+            "[{'a': 1}, {'a': 1}, {'a': 3}] is not a distinct set of values",
+            self.validator([{'a': 1}, {'a': 1}, {'a': 3}]))
+
