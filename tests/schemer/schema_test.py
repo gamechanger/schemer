@@ -40,6 +40,14 @@ class TestSchemaVerification(unittest.TestCase):
             },
             'author')
 
+    def test_nullable_should_be_a_boolean(self):
+        self.assert_spec_invalid(
+            {
+                "author": {'type': int, 'nullable': 23}
+            },
+            'author')
+
+
     def test_single_validation_function(self):
         Schema({'some_field': {'type':int, "validates":one_of(['a', 'b'])}})
 
