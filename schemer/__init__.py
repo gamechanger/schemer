@@ -89,6 +89,10 @@ class Schema(object):
         if 'required' in spec and not isinstance(spec['required'], bool):
             raise SchemaFormatException("{} required declaration should be True or False", path)
 
+        # Required should be a boolean
+        if 'nullable' in spec and not isinstance(spec['nullable'], bool):
+            raise SchemaFormatException("{} nullable declaration should be True or False", path)
+
         # Must have a type specified
         if 'type' not in spec:
             raise SchemaFormatException("{} has no type declared.", path)
@@ -104,7 +108,7 @@ class Schema(object):
             self._verify_default(spec, path)
 
         # Only expected spec keys are supported
-        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default'])):
+        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default', 'nullable'])):
             raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
 
     def _verify_type(self, spec, path):

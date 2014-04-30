@@ -36,6 +36,7 @@ blog_post_schema = Schema({
     "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
+    "external_code":    {"type": basestring, "required": False, "nullable": False}
 })
 
 
