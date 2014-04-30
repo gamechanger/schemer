@@ -191,9 +191,11 @@ class Schema(object):
         for field, spec in self.doc_spec.iteritems():
             path = self._append_path(path_prefix, field)
 
+            # If the field is present, validate it's value.
             if field in instance:
                 self._validate_value(instance[field], spec, path, errors)
             else:
+                # If not, add an error if it was a required key.
                 if spec.get('required', False):
                     errors[path] = "{} is required.".format(path)
 
@@ -210,8 +212,10 @@ class Schema(object):
         field spec and path. Any validation failures are added to the given errors
         collection."""
 
-        # Check for an empty value and bail out if necessary applying the required
-        # constraint in the process.
+        # Check if the value is None and add an error if the field is not nullable.
+        # Note that for backward compatibility reasons, the default value of 'nullable'
+        # is the inverse of 'required' (which use to mean both that the key be present
+        # and not set to None).
         if value is None:
             if not field_spec.get('nullable', not field_spec.get('required', False)):
                 errors[path] = "{} is not nullable.".format(path)
