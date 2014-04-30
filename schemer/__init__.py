@@ -189,11 +189,13 @@ class Schema(object):
         # Loop over each field in the schema and check the instance value conforms
         # to its spec
         for field, spec in self.doc_spec.iteritems():
-            value = instance.get(field, None)
-
             path = self._append_path(path_prefix, field)
 
-            self._validate_value(value, spec, path, errors)
+            if field in instance:
+                self._validate_value(instance[field], spec, path, errors)
+            else:
+                if spec.get('required', False):
+                    errors[path] = "{} is required.".format(path)
 
         # Now loop over each field in the given instance and make sure we don't
         # have any fields not declared in the schema, unless strict mode has been
@@ -211,8 +213,8 @@ class Schema(object):
         # Check for an empty value and bail out if necessary applying the required
         # constraint in the process.
         if value is None:
-            if field_spec.get('required', False):
-                errors[path] = "{} is required.".format(path)
+            if not field_spec.get('nullable', not field_spec.get('required', False)):
+                errors[path] = "{} is not nullable.".format(path)
             return
 
         # All fields should have a type

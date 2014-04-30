@@ -178,9 +178,22 @@ class TestValidation(unittest.TestCase):
         del self.document['author']
         self.assert_document_paths_invalid(self.document, ['author'])
 
+    def test_required_field_with_null_value(self):
+        # By default, required fields are not nullable
+        self.document['author'] = None
+        self.assert_document_paths_invalid(self.document, ['author'])
+
+    def test_non_required_field_set_to_none(self):
+        self.document['likes'] = None
+        blog_post_schema.validate(self.document)
+
     def test_missing_required_array_field(self):
         del self.document['comments']
         self.assert_document_paths_invalid(self.document, ['comments'])
+
+    def test_set_non_nullable_field_to_none(self):
+        self.document['external_code'] = None
+        self.assert_document_paths_invalid(self.document, ['external_code'])
 
     def test_incorrect_type(self):
         self.document['author'] = 33
