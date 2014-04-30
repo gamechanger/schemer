@@ -29,6 +29,9 @@ blog_post_schema = Schema({
         "text":             {"type": basestring, "required": True},
         "page_views":       {"type": int, "default": 1}
     }), "required": True},
+    "meta":             {"type": Schema({
+        "last_edited":      {"type": datetime}
+    }), "required": True, "nullable": True},
     "category":         {"type": basestring, "validates": one_of("cooking", "politics")},
     "comments":         {"type": Array(comment_schema), "required": True},
     "likes":            {"type": int, "default": 0},
@@ -51,6 +54,7 @@ def valid_doc(overrides=None):
             "text": "First start by pre-heating the oven..."
         },
         "category": "cooking",
+        "meta": None,
         "comments": [
             {
                 "commenter": {

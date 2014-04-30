@@ -117,7 +117,7 @@ class Schema(object):
 
         if isinstance(field_type, Schema):
             # Nested documents cannot have defaults or validation
-            if not set(spec.keys()).issubset(set(['type', 'required'])):
+            if not set(spec.keys()).issubset(set(['type', 'required', 'nullable'])):
                 raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
             return
 
