@@ -89,6 +89,10 @@ class Schema(object):
         if 'required' in spec and not isinstance(spec['required'], bool):
             raise SchemaFormatException("{} required declaration should be True or False", path)
 
+        # Required should be a boolean
+        if 'nullable' in spec and not isinstance(spec['nullable'], bool):
+            raise SchemaFormatException("{} nullable declaration should be True or False", path)
+
         # Must have a type specified
         if 'type' not in spec:
             raise SchemaFormatException("{} has no type declared.", path)
@@ -104,7 +108,7 @@ class Schema(object):
             self._verify_default(spec, path)
 
         # Only expected spec keys are supported
-        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default'])):
+        if not set(spec.keys()).issubset(set(['type', 'required', 'validates', 'default', 'nullable'])):
             raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
 
     def _verify_type(self, spec, path):
@@ -185,11 +189,15 @@ class Schema(object):
         # Loop over each field in the schema and check the instance value conforms
         # to its spec
         for field, spec in self.doc_spec.iteritems():
-            value = instance.get(field, None)
-
             path = self._append_path(path_prefix, field)
 
-            self._validate_value(value, spec, path, errors)
+            # If the field is present, validate it's value.
+            if field in instance:
+                self._validate_value(instance[field], spec, path, errors)
+            else:
+                # If not, add an error if it was a required key.
+                if spec.get('required', False):
+                    errors[path] = "{} is required.".format(path)
 
         # Now loop over each field in the given instance and make sure we don't
         # have any fields not declared in the schema, unless strict mode has been
@@ -204,11 +212,13 @@ class Schema(object):
         field spec and path. Any validation failures are added to the given errors
         collection."""
 
-        # Check for an empty value and bail out if necessary applying the required
-        # constraint in the process.
+        # Check if the value is None and add an error if the field is not nullable.
+        # Note that for backward compatibility reasons, the default value of 'nullable'
+        # is the inverse of 'required' (which use to mean both that the key be present
+        # and not set to None).
         if value is None:
-            if field_spec.get('required', False):
-                errors[path] = "{} is required.".format(path)
+            if not field_spec.get('nullable', not field_spec.get('required', False)):
+                errors[path] = "{} is not nullable.".format(path)
             return
 
         # All fields should have a type

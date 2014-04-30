@@ -36,6 +36,7 @@ blog_post_schema = Schema({
     "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
+    "external_code":    {"type": basestring, "nullable": False}
 })
 
 
@@ -67,7 +68,8 @@ def valid_doc(overrides=None):
                 "comment": "My wife loves these."
             }
         ],
-        "tags": ["cookies", "recipe", "yum"]
+        "tags": ["cookies", "recipe", "yum"],
+        "external_code": "ABC123"
     }
     if overrides:
         doc.update(overrides)
