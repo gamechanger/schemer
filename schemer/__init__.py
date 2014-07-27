@@ -1,3 +1,4 @@
+import types, copy
 from inspect import getargspec
 from exceptions import ValidationException, SchemaFormatException
 from extension_types import Mixed
@@ -125,8 +126,8 @@ class Schema(object):
             if not isinstance(field_type.contained_type, (type, Schema, Array)):
                 raise SchemaFormatException("Unsupported field type contained by Array at {}.", path)
 
-        elif not isinstance(field_type, type):
-            raise SchemaFormatException("Unsupported field type at {}. Type must be a type, and Array or another Schema", path)
+        elif not isinstance(field_type, type) and not isinstance(field_type, types.FunctionType):
+            raise SchemaFormatException("Unsupported field type at {}. Type must be a type, a function, an Array or another Schema", path)
 
 
     def _verify_default(self, spec, path):
@@ -223,6 +224,15 @@ class Schema(object):
 
         # All fields should have a type
         field_type = field_spec['type']
+        if isinstance(field_type, types.FunctionType):
+            if isinstance(value, dict):
+                field_type = field_type(value)
+                if not isinstance(field_type, type) and not isinstance(field_type, Schema):
+                    raise SchemaFormatException("Dynamic schema function did not return a type at path {}", path)
+            else:
+                errors[path] = "Field type of function expects a value of type dict"
+                return
+
 
         # If our field is an embedded document, recurse into it
         if isinstance(field_type, Schema):

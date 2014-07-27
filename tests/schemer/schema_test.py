@@ -161,94 +161,109 @@ class TestSchemaVerification(unittest.TestCase):
             "fruit": {'type': Array(basestring), "validates": length(1, 2)}
         })
 
-
-class TestValidation(unittest.TestCase):
+class TestBlogValidation(unittest.TestCase):
     def setUp(self):
-        self.document = valid_doc()
+        self.document_1 = valid_doc()
+        self.document_2 = valid_doc(overrides={"author": {"first_name": "John",
+                                                               "last_name": "Humphreys",
+                                                               "birth_year": 1978,
+                                                               "birth_month": 8,
+                                                               "birth_day": 15}})
 
     def assert_document_paths_invalid(self, document, paths):
         with self.assertRaises(ValidationException) as cm:
             blog_post_schema.validate(document)
         self.assertListEqual(paths, cm.exception.errors.keys())
 
-    def test_valid_document(self):
-        blog_post_schema.validate(self.document)
+    def test_valid_document_1(self):
+        blog_post_schema.validate(self.document_1)
 
-    def test_missing_required_field(self):
-        del self.document['author']
-        self.assert_document_paths_invalid(self.document, ['author'])
+    def test_valid_document_2(self):
+        blog_post_schema.validate(self.document_2)
+
+    def test_missing_required_field_1(self):
+        del self.document_1["author"]
+        self.assert_document_paths_invalid(self.document_1, ["author"])
+
+    def test_missing_subfield_of_dynamic_schema_1(self):
+        del self.document_1["author"]["last"]
+        self.assert_document_paths_invalid(self.document_1, ["author.last"])
+
+    def test_missing_subfield_of_dynamic_schema_2(self):
+        del self.document_2["author"]["last_name"]
+        self.assert_document_paths_invalid(self.document_2, ["author.last_name"])
 
     def test_required_field_with_null_value(self):
         # By default, required fields are not nullable
-        self.document['author'] = None
-        self.assert_document_paths_invalid(self.document, ['author'])
+        self.document_1['author'] = None
+        self.assert_document_paths_invalid(self.document_1, ['author'])
 
     def test_non_required_field_set_to_none(self):
-        self.document['likes'] = None
-        blog_post_schema.validate(self.document)
+        self.document_1['likes'] = None
+        blog_post_schema.validate(self.document_1)
 
     def test_missing_required_array_field(self):
-        del self.document['comments']
-        self.assert_document_paths_invalid(self.document, ['comments'])
+        del self.document_1['comments']
+        self.assert_document_paths_invalid(self.document_1, ['comments'])
 
     def test_set_non_nullable_field_to_none(self):
-        self.document['external_code'] = None
-        self.assert_document_paths_invalid(self.document, ['external_code'])
+        self.document_1['external_code'] = None
+        self.assert_document_paths_invalid(self.document_1, ['external_code'])
 
     def test_incorrect_type(self):
-        self.document['author'] = 33
-        self.assert_document_paths_invalid(self.document, ['author'])
+        self.document_1['author'] = 33
+        self.assert_document_paths_invalid(self.document_1, ['author'])
 
     def test_mixed_type(self):
-        self.document['misc'] = "a string"
-        blog_post_schema.validate(self.document)
-        self.document['misc'] = 32
-        blog_post_schema.validate(self.document)
+        self.document_1['misc'] = "a string"
+        blog_post_schema.validate(self.document_1)
+        self.document_1['misc'] = 32
+        blog_post_schema.validate(self.document_1)
 
     def test_mixed_type_instance_incorrect_type(self):
-        self.document['linked_id'] = 123.45
-        self.assert_document_paths_invalid(self.document, ['linked_id'])
+        self.document_1['linked_id'] = 123.45
+        self.assert_document_paths_invalid(self.document_1, ['linked_id'])
 
     def test_missing_embedded_document(self):
-        del self.document['content']
-        self.assert_document_paths_invalid(self.document, ['content'])
+        del self.document_1['content']
+        self.assert_document_paths_invalid(self.document_1, ['content'])
 
     def test_missing_required_field_in_embedded_document(self):
-        del self.document['content']['title']
-        self.assert_document_paths_invalid(self.document, ['content.title'])
+        del self.document_1['content']['title']
+        self.assert_document_paths_invalid(self.document_1, ['content.title'])
 
     def test_missing_required_field_in_embedded_collection(self):
-        del self.document['comments'][0]['commenter']
-        self.assert_document_paths_invalid(self.document, ['comments.0.commenter'])
+        del self.document_1['comments'][0]['commenter']
+        self.assert_document_paths_invalid(self.document_1, ['comments.0.commenter'])
 
     def test_multiple_missing_fields(self):
-        del self.document['content']['title']
-        del self.document['comments'][1]['commenter']
-        del self.document['author']
+        del self.document_1['content']['title']
+        del self.document_1['comments'][1]['commenter']
+        del self.document_1['author']
         self.assert_document_paths_invalid(
-            self.document,
+            self.document_1,
             ['content.title', 'comments.1.commenter', 'author'])
 
     def test_embedded_collection_item_of_incorrect_type(self):
-        self.document['tags'].append(55)
-        self.assert_document_paths_invalid(self.document, ['tags.3'])
+        self.document_1['tags'].append(55)
+        self.assert_document_paths_invalid(self.document_1, ['tags.3'])
 
     def test_validation_failure(self):
-        self.document['category'] = 'gardening'  # invalid category
-        self.assert_document_paths_invalid(self.document, ['category'])
+        self.document_1['category'] = 'gardening'  # invalid category
+        self.assert_document_paths_invalid(self.document_1, ['category'])
 
     def test_disallows_fields_not_in_schema(self):
-        self.document['something'] = "extra"
-        self.assert_document_paths_invalid(self.document, ['something'])
+        self.document_1['something'] = "extra"
+        self.assert_document_paths_invalid(self.document_1, ['something'])
 
     def test_validation_of_array(self):
-        self.document['tags'] = []
-        self.assert_document_paths_invalid(self.document, ['tags'])
+        self.document_1['tags'] = []
+        self.assert_document_paths_invalid(self.document_1, ['tags'])
 
 
 class TestDefaultApplication(unittest.TestCase):
     def setUp(self):
-        self.document = {
+        self.document_1 = {
             "author": {
                 "first":    "John",
                 "last":     "Humphreys"
@@ -272,29 +287,29 @@ class TestDefaultApplication(unittest.TestCase):
         }
 
     def test_apply_default_function(self):
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(stubnow(), self.document['creation_date'])
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(stubnow(), self.document_1['creation_date'])
 
     def test_apply_default_value(self):
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(0, self.document['likes'])
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(0, self.document_1['likes'])
 
     def test_apply_default_value_in_nested_document(self):
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(1, self.document['content']['page_views'])
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(1, self.document_1['content']['page_views'])
 
     def test_apply_default_value_in_array(self):
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(0, self.document['comments'][0]['votes'])
-        self.assertEqual(0, self.document['comments'][1]['votes'])
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(0, self.document_1['comments'][0]['votes'])
+        self.assertEqual(0, self.document_1['comments'][1]['votes'])
 
     def test_apply_default_value_for_array(self):
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(['blog'], self.document['tags'])
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(['blog'], self.document_1['tags'])
 
     def test_default_value_does_not_overwrite_existing(self):
-        self.document['likes'] = 35
-        self.document['creation_date'] = datetime(1980, 5, 3)
-        blog_post_schema.apply_defaults(self.document)
-        self.assertEqual(35, self.document['likes'])
-        self.assertEqual(datetime(1980, 5, 3), self.document['creation_date'])
+        self.document_1['likes'] = 35
+        self.document_1['creation_date'] = datetime(1980, 5, 3)
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(35, self.document_1['likes'])
+        self.assertEqual(datetime(1980, 5, 3), self.document_1['creation_date'])
