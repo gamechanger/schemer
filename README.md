@@ -63,7 +63,7 @@ Each field in a schema must be given a type by adding a `"type"` key to the fiel
 ```python
 schema = Schema({"name": {"type": basestring}})
 ```
-The `"type"` can be any Python `type` which responds to `isinstance()`, or another `Schema` for schema-nesting (see below).
+The `"type"` can be any Python `type` which responds to `isinstance()`, another `Schema` for schema-nesting (see below), or a `function` which will create dynamic schema (see below).
 
 #### The "Mixed" type
 The `Mixed` type allows you to indicate that a field supports values of multiple types.
@@ -155,6 +155,63 @@ bookmark_schema = Schema({
                                                          distinct()]}
 })
 ```
+
+### Dynamic Types
+Sometimes it becomes necessary to set the expected type for a given field dynamically at validation-time, based on the content of a given document.
+
+For this purpose, Schemer allows you to specify a function for a given field's `'type'` specification. The given function will be called at validation time with a single argument - the sub-document, of the document being validated, keyed off of the field. The dynamic type function should return the `type` against which the given field value should be validated. This can be a simple Python type, or a `Schema` or `Array`.
+
+Consider the following example:
+
+```
+uk_address_schema = Schema({
+    'recipient': {'type': basestring, 'required': True},
+    'floor_apartment': {'type': basestring, 'required': False},
+    'building': {'type': basestring, 'required': False},
+    'house_number': {'type': int,  'required': False},
+    'dependent_locality': {'type': basestring, 'required': False},
+    'localitly': {'type': basestring, 'required': True},
+    'postal_code': {'type': basestring, 'required': True},
+    'country': {'type': basestring, 'required': True}
+})
+
+usa_address_schema = Schema({
+    'recipient': {'type': basestring, 'required': True},
+    'house_number_street_name': {'type': int,  'required': True},
+    'floor_apartment': {'type': basestring, 'required': False},
+    'localitly_province_postalcode': {'type': basestring, 'required': True},
+    'country': {'type': basestring, 'required': True}
+})
+
+canada_address_schema = Schema({
+    'recipient': {'type': basestring, 'required': True},
+    'house_number_street_name': {'type': basestring, 'required': True},
+    'street_direction': {'type': basestring, 'required': False},
+    'locality_province_postalcode': {'type': basestring, 'required': True},
+    'country': {'type': basestring, 'required': True}
+})
+
+def get_address_schema(document):
+    country = document.get('country')
+    if country == 'uk':
+        return uk_address_schema
+    elif country == 'usa':
+        return usa_address_schema
+    else:
+        return canada_address_schema
+
+user_account_schema = Schema({
+    'first_name': {'type': basestring, 'required': True},
+    'last_name': {'type': basestring, 'required': True},
+    'age': {'type': int, 'required': True},
+    'address': {'type': get_address_schema, 'required': True}
+})
+
+```
+In this instance, dynamic types allow us to specify a single `'address'` field on the `user_account_schema`, but validate against one of multiple potential address schemas depending on the country we've set in any given document's address.
+
+Important Note:
+Bear in mind that using dynamic type functions in this way effectively defers the verification that the Schema's structure is itself valid until document validation time. So you're giving up a certain amount of control for the sake of flexibility.
 
 ### Defaults
 Schemas allow you to specify default values for fields which may be applied to a given document.

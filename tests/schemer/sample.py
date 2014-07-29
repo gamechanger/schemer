@@ -22,8 +22,22 @@ comment_schema = Schema({
     "votes":        {"type": int, "default": 0}
 })
 
+about_schema = Schema({
+    "first_name": {"type": basestring, "required": True},
+    "last_name": {"type": basestring, "required": True},
+    "birth_year": {"type": int, "required": True},
+    "birth_month": {"type": int, "required": True},
+    "birth_day": {"type": int, "required": True}
+    })
+
+def get_author_schema(document):
+    if document.get("first_name"):
+        return about_schema
+    else:
+        return name_schema
+
 blog_post_schema = Schema({
-    "author":           {"type": name_schema, "required": True},
+    "author":           {"type": get_author_schema, "required": True},
     "content":          {"type": Schema({
         "title":            {"type": basestring, "required": True},
         "text":             {"type": basestring, "required": True},
