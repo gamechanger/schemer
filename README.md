@@ -304,6 +304,6 @@ except ValidationException, e:
 
 # Developing and Contributing
 
-To run Schemer's tests, simply run `python setup.py nosetests` at the command line.
+To run Schemer's tests, simply install nose (`pip install nose`) and run `python setup.py nosetests` at the command line.
 
 All contributions submitted as GitHub pull requests are warmly received.
