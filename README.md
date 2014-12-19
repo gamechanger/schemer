@@ -163,7 +163,7 @@ For this purpose, Schemer allows you to specify a function for a given field's `
 
 Consider the following example:
 
-```
+```python
 uk_address_schema = Schema({
     'recipient': {'type': basestring, 'required': True},
     'floor_apartment': {'type': basestring, 'required': False},
