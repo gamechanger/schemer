@@ -165,30 +165,30 @@ Consider the following example:
 
 ```python
 uk_address_schema = Schema({
-    'recipient': {'type': basestring, 'required': True},
-    'floor_apartment': {'type': basestring, 'required': False},
-    'building': {'type': basestring, 'required': False},
-    'house_number': {'type': int,  'required': False},
-    'dependent_locality': {'type': basestring, 'required': False},
-    'localitly': {'type': basestring, 'required': True},
-    'postal_code': {'type': basestring, 'required': True},
-    'country': {'type': basestring, 'required': True}
+    'recipient':            {'type': basestring, 'required': True},
+    'floor_apartment':      {'type': basestring, 'required': False},
+    'building':             {'type': basestring, 'required': False},
+    'house_number':         {'type': int,  'required': False},
+    'dependent_locality':   {'type': basestring, 'required': False},
+    'localitly':            {'type': basestring, 'required': True},
+    'postal_code':          {'type': basestring, 'required': True},
+    'country':              {'type': basestring, 'required': True}
 })
 
 usa_address_schema = Schema({
-    'recipient': {'type': basestring, 'required': True},
-    'house_number_street_name': {'type': int,  'required': True},
-    'floor_apartment': {'type': basestring, 'required': False},
-    'localitly_province_postalcode': {'type': basestring, 'required': True},
-    'country': {'type': basestring, 'required': True}
+    'recipient':                    {'type': basestring, 'required': True},
+    'house_number_street_name':     {'type': int,  'required': True},
+    'floor_apartment':              {'type': basestring, 'required': False},
+    'locality_province_postalcode': {'type': basestring, 'required': True},
+    'country':                      {'type': basestring, 'required': True}
 })
 
 canada_address_schema = Schema({
-    'recipient': {'type': basestring, 'required': True},
-    'house_number_street_name': {'type': basestring, 'required': True},
-    'street_direction': {'type': basestring, 'required': False},
+    'recipient':                    {'type': basestring, 'required': True},
+    'house_number_street_name':     {'type': basestring, 'required': True},
+    'street_direction':             {'type': basestring, 'required': False},
     'locality_province_postalcode': {'type': basestring, 'required': True},
-    'country': {'type': basestring, 'required': True}
+    'country':                      {'type': basestring, 'required': True}
 })
 
 def get_address_schema(document):
@@ -201,10 +201,10 @@ def get_address_schema(document):
         return canada_address_schema
 
 user_account_schema = Schema({
-    'first_name': {'type': basestring, 'required': True},
-    'last_name': {'type': basestring, 'required': True},
-    'age': {'type': int, 'required': True},
-    'address': {'type': get_address_schema, 'required': True}
+    'first_name':   {'type': basestring, 'required': True},
+    'last_name':    {'type': basestring, 'required': True},
+    'age':          {'type': int, 'required': True},
+    'address':      {'type': get_address_schema, 'required': True}
 })
 
 ```
