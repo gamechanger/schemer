@@ -74,13 +74,26 @@ schema = Schema({"external_id": {"type": Mixed(basestring, int)}})  # only bases
 
 When you validate a `dict` containing a value of the wrong type for a given a field a `ValidationException` will be thrown describing the error.
 
-### Mandatory fields
-You can require a field to be present in a `dict` by adding `"required": True` to the Schema:
+### Required and nullable fields
+You can require a field to be both present in a `dict` and to have a non-`None` value by adding `"required": True` to the field's spec in the Schema:
 ```python
 schema = Schema({"name": {"type": basestring, "required": True}})
-```
-By default all fields are _not_ required.
 
+schema.validate({"name": "bob"})  # valid
+schema.validate({"name": None})   # invalid, throws ValidationException
+schema.validate({})               # invalid, throws ValidationException
+```
+Fields are `"required": False` by default.
+
+You can also mark a required field as nullable by adding `"nullable": True` to the field's spec. This means that although we still require the field's *key* to be present in the `dict` we're validating, its value may be set to `None`.
+```python
+schema = Schema({"name": {"type": basestring, "required": True, "nullable": True}})
+
+schema.validate({"name": "bob"})  # valid
+schema.validate({"name": None})   # valid
+schema.validate({})               # invalid, throws ValidationException
+```
+Required fields are not nullable by default.
 
 ### Nested schemas
 Schemas may be nested within one another in order to describe the structure of `dict`s containing deep graphs.
