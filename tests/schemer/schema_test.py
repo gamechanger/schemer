@@ -210,9 +210,11 @@ class TestBlogValidation(unittest.TestCase):
         self.document_1['external_code'] = None
         self.assert_document_paths_invalid(self.document_1, ['external_code'])
 
-    def test_incorrect_type(self):
+    def test_dynamic_function_exception(self):
         self.document_1['author'] = 33
-        self.assert_document_paths_invalid(self.document_1, ['author'])
+        with self.assertRaises(SchemaFormatException) as cm:
+            blog_post_schema.validate(self.document_1)
+        self.assertEqual('author', cm.exception.path)
 
     def test_mixed_type(self):
         self.document_1['misc'] = "a string"
@@ -259,6 +261,22 @@ class TestBlogValidation(unittest.TestCase):
     def test_validation_of_array(self):
         self.document_1['tags'] = []
         self.assert_document_paths_invalid(self.document_1, ['tags'])
+
+    def test_dynamic_function_valid_array(self):
+        self.document_1['website'] = [self.document_1['website'] for i in range(2)]
+        blog_post_schema.validate(self.document_1)
+
+    def test_dynamic_function_invalid_array(self):
+        self.document_1['website'] = ["string" for i in range(2)]
+        self.assert_document_paths_invalid(self.document_1, ['website.0', 'website.1'])
+
+    def test_dynamic_function_correct_type(self):
+        self.document_1['website'] = "WEB"
+        blog_post_schema.validate(self.document_1)
+
+    def test_dynamic_function_wrong_type(self):
+        self.document_1['website'] = 56
+        self.assert_document_paths_invalid(self.document_1, ['website'])
 
 
 class TestDefaultApplication(unittest.TestCase):
