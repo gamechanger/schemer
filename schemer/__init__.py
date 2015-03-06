@@ -225,13 +225,12 @@ class Schema(object):
         # All fields should have a type
         field_type = field_spec['type']
         if isinstance(field_type, types.FunctionType):
-            if isinstance(value, dict):
+            try:
                 field_type = field_type(value)
-                if not isinstance(field_type, type) and not isinstance(field_type, Schema):
-                    raise SchemaFormatException("Dynamic schema function did not return a type at path {}", path)
-            else:
-                errors[path] = "Field type of function expects a value of type dict"
-                return
+            except Exception as e:
+                raise SchemaFormatException("Dynamic schema function raised exception: {}".format(str(e)), path)
+            if not isinstance(field_type, (type, Schema, Array)):
+                raise SchemaFormatException("Dynamic schema function did not return a type at path {}", path)
 
 
         # If our field is an embedded document, recurse into it

@@ -36,6 +36,18 @@ def get_author_schema(document):
     else:
         return name_schema
 
+website_schema = Schema({
+    "url": {"type": basestring, "required": True},
+    "name": {"type": basestring, "required": True}
+    })
+
+def get_website_schema(document):
+    if isinstance(document, list):
+        return Array(website_schema)
+    elif isinstance(document, dict):
+        return website_schema
+    return basestring
+
 blog_post_schema = Schema({
     "author":           {"type": get_author_schema, "required": True},
     "content":          {"type": Schema({
@@ -53,7 +65,8 @@ blog_post_schema = Schema({
     "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
-    "external_code":    {"type": basestring, "nullable": False}
+    "external_code":    {"type": basestring, "nullable": False},
+    "website":          {"type": get_website_schema}
 })
 
 
@@ -87,7 +100,11 @@ def valid_doc(overrides=None):
             }
         ],
         "tags": ["cookies", "recipe", "yum"],
-        "external_code": "ABC123"
+        "external_code": "ABC123",
+        "website": {
+            "url": "johnhumphreys.tumblr.com",
+            "name": "John's Cooking Blog"
+        }
     }
     if overrides:
         doc.update(overrides)
