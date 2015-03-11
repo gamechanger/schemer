@@ -278,6 +278,26 @@ class TestBlogValidation(unittest.TestCase):
         self.document_1['website'] = 56
         self.assert_document_paths_invalid(self.document_1, ['website'])
 
+    def test_array_with_dynamic_function_correct_types(self):
+        self.document_1['editors'] = [{'first': 'Jordan', 'last': 'Gansey'}]
+        blog_post_schema.validate(self.document_1)
+        self.document_1['editors'] = ['Jordan Gansey']
+        blog_post_schema.validate(self.document_1)
+
+    def test_array_with_dynamic_function_wrong_types(self):
+        self.document_1['editors'] = [{'first': 'Jordan'}]
+        self.assert_document_paths_invalid(self.document_1, ['editors.0.last'])
+        self.document_1['editors'] = [555]
+        self.assert_document_paths_invalid(self.document_1, ['editors.0'])
+
+    def test_array_with_dynamic_function_heterogenous_list_correct_type(self):
+        self.document_1['editors'] = [{'first': 'Jordan', 'last': 'Gansey'}, 'Jordan Gansey']
+        blog_post_schema.validate(self.document_1)
+
+    def test_array_with_dynamic_function_heterogenous_list_wrong_type(self):
+        self.document_1['editors'] = ['Jordan Gansey', {'last': 'Gansey'}]
+        self.assert_document_paths_invalid(self.document_1, ['editors.1.first'])
+
 
 class TestDefaultApplication(unittest.TestCase):
     def setUp(self):

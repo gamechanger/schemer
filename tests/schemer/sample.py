@@ -28,7 +28,7 @@ about_schema = Schema({
     "birth_year": {"type": int, "required": True},
     "birth_month": {"type": int, "required": True},
     "birth_day": {"type": int, "required": True}
-    })
+})
 
 def get_author_schema(document):
     if document.get("first_name"):
@@ -39,7 +39,7 @@ def get_author_schema(document):
 website_schema = Schema({
     "url": {"type": basestring, "required": True},
     "name": {"type": basestring, "required": True}
-    })
+})
 
 def get_website_schema(document):
     if isinstance(document, list):
@@ -66,7 +66,8 @@ blog_post_schema = Schema({
     "misc":             {"type": Mixed(basestring, int)},
     "linked_id":        {"type": Mixed(int, basestring)},
     "external_code":    {"type": basestring, "nullable": False},
-    "website":          {"type": get_website_schema}
+    "website":          {"type": get_website_schema},
+    "editors":          {"type": Array(lambda document: name_schema if isinstance(document, dict) else basestring)}
 })
 
 

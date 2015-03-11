@@ -123,7 +123,7 @@ class Schema(object):
             return
 
         elif isinstance(field_type, Array):
-            if not isinstance(field_type.contained_type, (type, Schema, Array)):
+            if not isinstance(field_type.contained_type, (type, Schema, Array, types.FunctionType)):
                 raise SchemaFormatException("Unsupported field type contained by Array at {}.", path)
 
         elif not isinstance(field_type, type) and not isinstance(field_type, types.FunctionType):
@@ -243,11 +243,15 @@ class Schema(object):
 
         elif isinstance(field_type, Array):
             if isinstance(value, list):
+                is_dynamic = isinstance(field_type.contained_type, types.FunctionType)
                 for i, item in enumerate(value):
+                    contained_type = field_type.contained_type
+                    if is_dynamic:
+                        contained_type = contained_type(item)
                     instance_path = self._append_path(path, i)
-                    if isinstance(field_type.contained_type, Schema):
-                        field_type.contained_type._validate_instance(item, errors, instance_path)
-                    elif not isinstance(item, field_type.contained_type):
+                    if isinstance(contained_type, Schema):
+                        contained_type._validate_instance(item, errors, instance_path)
+                    elif not isinstance(item, contained_type):
                         errors[instance_path] = "Array item at {} is of incorrect type".format(instance_path)
                         continue
             else:
