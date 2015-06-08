@@ -12,11 +12,12 @@ class Array(object):
 class Schema(object):
     """A Schema encapsulates the structure and constraints of a dict."""
 
-    def __init__(self, doc_spec, strict=True):
+    def __init__(self, doc_spec, strict=True, validates=[]):
         self._doc_spec = doc_spec
         self._virtuals = {}
         self._strict = strict
         self._verify()
+        self._validates = validates
 
     @property
     def doc_spec(self):
@@ -187,6 +188,9 @@ class Schema(object):
             errors[path_prefix] = "Expected instance of dict to validate against schema."
             return
 
+        # validate against the schema level validators
+        self._apply_validations(errors, path_prefix, self._validates, instance)
+
         # Loop over each field in the schema and check the instance value conforms
         # to its spec
         for field, spec in self.doc_spec.iteritems():
@@ -265,7 +269,9 @@ class Schema(object):
         validations = field_spec.get('validates', None)
         if validations is None:
             return
+        self._apply_validations(errors, path, validations, value)
 
+    def _apply_validations(self, errors, path, validations, value):
         def apply(fn):
             error = fn(value)
             if error:

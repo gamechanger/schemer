@@ -48,6 +48,19 @@ def get_website_schema(document):
         return website_schema
     return basestring
 
+
+def mod_date_gt_creation_date():
+    def validate(value):
+        if 'modification_date' in value and not value['modification_date'] > value['creation_date']:
+            return 'modification_date must be larger than creation_date'
+    return validate
+
+def mod_date_lte_final_date():
+    def validate(value):
+        if 'modification_date'in value and not value['modification_date'] <= value['final_date']:
+            return 'modification_date must be less than or equal to final_date'
+    return validate
+
 blog_post_schema = Schema({
     "author":           {"type": get_author_schema, "required": True},
     "content":          {"type": Schema({
@@ -67,8 +80,10 @@ blog_post_schema = Schema({
     "linked_id":        {"type": Mixed(int, basestring)},
     "external_code":    {"type": basestring, "nullable": False},
     "website":          {"type": get_website_schema},
-    "editors":          {"type": Array(lambda document: name_schema if isinstance(document, dict) else basestring)}
-})
+    "editors":          {"type": Array(lambda document: name_schema if isinstance(document, dict) else basestring)},
+    "modification_date":{"type": datetime},
+    "final_date":       {"type": datetime}
+}, validates=[mod_date_gt_creation_date(), mod_date_lte_final_date()])
 
 
 def valid_doc(overrides=None):
@@ -110,4 +125,3 @@ def valid_doc(overrides=None):
     if overrides:
         doc.update(overrides)
     return doc
-

@@ -298,6 +298,27 @@ class TestBlogValidation(unittest.TestCase):
         self.document_1['editors'] = ['Jordan Gansey', {'last': 'Gansey'}]
         self.assert_document_paths_invalid(self.document_1, ['editors.1.first'])
 
+    def test_schema_level_validator_list_item_failure_to_small(self):
+        self.document_1.update(
+            {'creation_date': datetime(2014, 1, 1),
+             'modification_date': datetime(2013, 1, 1),
+             'final_date': datetime(2015, 1, 1)})
+        self.assert_document_paths_invalid(self.document_1, [''])
+
+    def test_schema_level_validator_list_item_failure_to_large(self):
+        self.document_1.update(
+            {'creation_date': datetime(2014, 1, 1),
+             'modification_date': datetime(2016, 1, 1),
+             'final_date': datetime(2015, 1, 1)})
+        self.assert_document_paths_invalid(self.document_1, [''])
+
+    def test_schema_level_validator_list_item_just_right(self):
+        self.document_1.update(
+            {'creation_date': datetime(2014, 1, 1),
+             'modification_date': datetime(2015, 1, 1),
+             'final_date': datetime(2016, 1, 1)})
+        blog_post_schema.validate(self.document_1)
+
 
 class TestDefaultApplication(unittest.TestCase):
     def setUp(self):
@@ -351,3 +372,6 @@ class TestDefaultApplication(unittest.TestCase):
         blog_post_schema.apply_defaults(self.document_1)
         self.assertEqual(35, self.document_1['likes'])
         self.assertEqual(datetime(1980, 5, 3), self.document_1['creation_date'])
+
+
+
