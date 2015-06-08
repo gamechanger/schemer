@@ -92,6 +92,47 @@ class TestSchemaVerification(unittest.TestCase):
             {'num_wheels':{'type':int, 'default':'wrong'}},
             'num_wheels')
 
+    def test_default_schema_value_of_incorrect_type_1(self):
+        self.assert_spec_invalid(
+            {'wheel':{'type':Schema({'size': {'type': int, 'default': 32},
+                                     'brand': {'type': basestring, 'default': 'firestone'}}),
+                      'default':'wrong'}},
+            'wheel')
+
+    def test_default_schema_value_correct_1(self):
+        Schema({'wheel':{'type':Schema({'size': {'type': int, 'default': 32},
+                                        'brand': {'type': basestring, 'default': 'firestone'}}),
+                'default':{'wrong': True}}})
+
+    def test_default_schema_value_correct_2(self):
+        Schema({'wheel':{'type':Schema({'size': {'type': int, 'default': 32},
+                                        'brand': {'type': basestring, 'default': 'firestone'}}),
+                      'default':{}}})
+
+    def test_default_array_schema_value_of_incorrect_type_1(self):
+        self.assert_spec_invalid(
+            {'wheel':{'type':Array(Schema({'size': {'type': int, 'default': 32},
+                                           'brand': {'type': basestring, 'default': 'firestone'}})),
+                      'default':'wrong'}},
+            'wheel')
+
+    def test_default_array_schema_value_of_incorrect_type_2(self):
+        self.assert_spec_invalid(
+            {'wheel':{'type':Array(Schema({'size': {'type': int, 'default': 32},
+                                           'brand': {'type': basestring, 'default': 'firestone'}})),
+                      'default':{}}},
+            'wheel')
+
+    def test_default_array_schema_value_correct_1(self):
+        Schema({'wheel':{'type':Array(Schema({'size': {'type': int, 'default': 32},
+                                              'brand': {'type': basestring, 'default': 'firestone'}})),
+                'default':[{'wrong': True}]}})
+
+    def test_default_array_schema_value_correct_2(self):
+        Schema({'wheel':{'type':Array(Schema({'size': {'type': int, 'default': 32},
+                                              'brand': {'type': basestring, 'default': 'firestone'}})),
+                      'default':[{}]}})
+
     def test_default_value_accepts_function(self):
         def default_fn():
             return 4
@@ -109,15 +150,6 @@ class TestSchemaVerification(unittest.TestCase):
                 "items": "wrong"
             },
             'items')
-
-    def test_nested_schema_cannot_have_default(self):
-        self.assert_spec_invalid(
-            {
-                "content": {'type': Schema({
-                    "somefield": {"type": int}
-                }), "default": {}}
-            },
-            'content')
 
     def test_nested_schema_cannot_have_validation(self):
         def some_func():
@@ -317,6 +349,7 @@ class TestBlogValidation(unittest.TestCase):
             {'creation_date': datetime(2014, 1, 1),
              'modification_date': datetime(2015, 1, 1),
              'final_date': datetime(2016, 1, 1)})
+
         blog_post_schema.validate(self.document_1)
 
 
@@ -373,5 +406,12 @@ class TestDefaultApplication(unittest.TestCase):
         self.assertEqual(35, self.document_1['likes'])
         self.assertEqual(datetime(1980, 5, 3), self.document_1['creation_date'])
 
+    def test_default_schema_value(self):
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEqual(0, self.document_1['latest_comment']['votes'])
 
+    def test_default_array_schema_value(self):
+        blog_post_schema.apply_defaults(self.document_1)
+        for i in range(3):
+            self.assertEqual(0, self.document_1['most_popular_comments'][i]['votes'])
 
