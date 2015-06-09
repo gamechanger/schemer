@@ -257,7 +257,6 @@ or multiple validators:
 schema = Schema({"num_wheels": {"type": int, "validates": [gte(0), lte(6)]}})
 ```
 
-
 #### Provided validators
 Schemer provides the following validators out-of-the-box:
 
@@ -292,10 +291,27 @@ def startswith(prefix):
     def validate(value):
         if not value.startswith(prefix):
             return "String must start with %s" % prefix
+    return validate
 
 # Usage:
 schema = Schema({"full_name": {"type": basestring, "validates": startswith("Mr")}})
 ```
+
+#### Schema level validators
+Validation can also be done at the Schema level.
+
+```python
+def check_for_valid_dates():
+    def validate(document):
+        if document["initial_date"] > document["current_date"]:
+            return "Initial date must be less than or equal to current date"
+    return validate
+
+schema = Schema({"initial_date": {"type": datetime},
+                 "current_date": {"type": datetime}},
+                validates=[check_for_valid_dates()])
+```
+
 
 ## Validating `dict`s
 
