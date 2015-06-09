@@ -228,21 +228,45 @@ Bear in mind that using dynamic type functions in this way effectively defers th
 
 ### Defaults
 Schemas allow you to specify default values for fields which may be applied to a given document.
-A default can either be specified as literal:
+A default can be specified a few different ways:
+
+* It can be specified as literal:
 ```python
 schema = Schema({"num_wheels": {"type": int, "default": 4}})
 ```
-or as a reference to parameterless function which will be called at the point the default is applied:
+* It can be specified as a reference to parameterless function which will be called at the point the default is applied:
 ```python
 import datetime
 schema = Schema({"created_date": {"type": datetime, "default": datetime.utcnow}})
 ```
+* You can use defaults with Arrays and Schemas
+```python
+num_wheels_schema = Schema({"num_wheels": {"type": int, "default": 4}})
+schema_default = Schema("wheel_info": {"type": num_wheels_schema, "default"={}})
+array_default = Schema("car_info": {"type": Array(num_wheels_schema), "default"=[{}, {}, {}]})
+
+```
+The default must be {} for Schemas and a list of {}s for Arrays.
+
+
+
 Defaults can be applied to a given document by using the `apply_defaults()` method:
 ```python
 schema = Schema({"num_wheels": {"type": int, "default": 4}})
 car = {}
 schema.apply_defaults(car)
 assert car == {"num_wheels": 4}
+```
+
+Using the third example above:
+```python
+car = {}
+schema_default.apply_defaults(car)
+assert car == {"wheel_info": {"num_wheels": 4}}
+
+cars = {}
+array_default.apply_defaults(cars)
+assert cars == {"wheel_info": [{"num_wheels": 4}, {"num_wheels": 4}, {"num_wheels": 4}]}
 ```
 
 

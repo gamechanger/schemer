@@ -28,12 +28,17 @@ class Schema(object):
         document instance as appropriate. Defaults are only applied to
         fields which are currently unset."""
         for field, spec in self.doc_spec.iteritems():
-
+            field_type = spec['type']
+            if field not in instance:
+                if 'default' in spec:
+                    default = spec['default']
+                    if callable(default):
+                        instance[field] = default()
+                    else:
+                        instance[field] = default
             # Determine if a value already exists for the field
             if field in instance:
                 value = instance[field]
-
-                field_type = spec['type']
 
                 # recurse into nested docs
                 if isinstance(field_type, Schema) and isinstance(value, dict):
@@ -42,19 +47,6 @@ class Schema(object):
                 elif isinstance(field_type, Array) and isinstance(field_type.contained_type, Schema) and isinstance(value, list):
                     for item in value:
                         field_type.contained_type.apply_defaults(item)
-
-
-                # Bailout as we don't want to apply a default
-                continue
-
-            # Apply a default if one is available
-            if isinstance(spec, dict) and 'default' in spec:
-                default = spec['default']
-                if callable(default):
-                    instance[field] = default()
-                else:
-                    instance[field] = default
-
 
     def validate(self, instance):
         """Validates the given document against this schema. Raises a
@@ -118,8 +110,8 @@ class Schema(object):
         field_type = spec['type']
 
         if isinstance(field_type, Schema):
-            # Nested documents cannot have defaults or validation
-            if not set(spec.keys()).issubset(set(['type', 'required', 'nullable'])):
+            # Nested documents cannot have validation
+            if not set(spec.keys()).issubset(set(['type', 'required', 'nullable', 'default'])):
                 raise SchemaFormatException("Unsupported field spec item at {}. Items: "+repr(spec.keys()), path)
             return
 
@@ -130,6 +122,8 @@ class Schema(object):
         elif not isinstance(field_type, type) and not isinstance(field_type, types.FunctionType):
             raise SchemaFormatException("Unsupported field type at {}. Type must be a type, a function, an Array or another Schema", path)
 
+    def _valid_schema_default(self, value):
+        return isinstance(value, dict)
 
     def _verify_default(self, spec, path):
         """Verifies that the default specified in the given spec is valid."""
@@ -147,8 +141,16 @@ class Schema(object):
 
             # Ensure the contents are of the correct type
             for i, item in enumerate(default):
-                if not isinstance(item, field_type.contained_type):
-                    raise SchemaFormatException("Not all items in the default list for the Array field at {} are of the correct type.", path)
+                if isinstance(field_type.contained_type, Schema):
+                    if not self._valid_schema_default(item):
+                        raise SchemaFormatException("Default value for Schema is not valid.", path)
+                elif not isinstance(item, field_type.contained_type):
+                        raise SchemaFormatException("Not all items in the default list for the Array field at {} are of the correct type.", path)
+
+        elif isinstance(field_type, Schema):
+            if not self._valid_schema_default(default):
+                raise SchemaFormatException("Default value for Schema is not valid.", path)
+
         else:
             if not isinstance(default, field_type):
                 raise SchemaFormatException("Default value for {} is not of the nominated type.", path)

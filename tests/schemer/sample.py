@@ -62,27 +62,29 @@ def mod_date_lte_final_date():
     return validate
 
 blog_post_schema = Schema({
-    "author":           {"type": get_author_schema, "required": True},
-    "content":          {"type": Schema({
+    "author":               {"type": get_author_schema, "required": True},
+    "content":              {"type": Schema({
         "title":            {"type": basestring, "required": True},
         "text":             {"type": basestring, "required": True},
         "page_views":       {"type": int, "default": 1}
     }), "required": True},
-    "meta":             {"type": Schema({
+    "meta":                 {"type": Schema({
         "last_edited":      {"type": datetime}
     }), "required": True, "nullable": True},
-    "category":         {"type": basestring, "validates": one_of("cooking", "politics")},
-    "comments":         {"type": Array(comment_schema), "required": True},
-    "likes":            {"type": int, "default": 0},
-    "creation_date":    {"type": datetime, "default": stubnow},
-    "tags":             {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
-    "misc":             {"type": Mixed(basestring, int)},
-    "linked_id":        {"type": Mixed(int, basestring)},
-    "external_code":    {"type": basestring, "nullable": False},
-    "website":          {"type": get_website_schema},
-    "editors":          {"type": Array(lambda document: name_schema if isinstance(document, dict) else basestring)},
-    "modification_date":{"type": datetime},
-    "final_date":       {"type": datetime}
+    "category":             {"type": basestring, "validates": one_of("cooking", "politics")},
+    "comments":             {"type": Array(comment_schema), "required": True},
+    "likes":                {"type": int, "default": 0},
+    "creation_date":        {"type": datetime, "default": stubnow},
+    "tags":                 {"type": Array(basestring), "default": ["blog"], "validates": length(1)},
+    "misc":                 {"type": Mixed(basestring, int)},
+    "linked_id":            {"type": Mixed(int, basestring)},
+    "external_code":        {"type": basestring, "nullable": False},
+    "website":              {"type": get_website_schema},
+    "editors":              {"type": Array(lambda document: name_schema if isinstance(document, dict) else basestring)},
+    "latest_comment":       {"type": comment_schema, "default": {}},
+    "most_popular_comments":{"type": Array(comment_schema), "default": [{}, {}, {}]},
+    "modification_date":    {"type": datetime},
+    "final_date":           {"type": datetime}
 }, validates=[mod_date_gt_creation_date(), mod_date_lte_final_date()])
 
 
