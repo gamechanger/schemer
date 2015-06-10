@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from schemer import Schema, Array
 from schemer.exceptions import ValidationException, SchemaFormatException
 from schemer.validators import one_of, lte, gte, length
@@ -410,8 +412,20 @@ class TestDefaultApplication(unittest.TestCase):
         blog_post_schema.apply_defaults(self.document_1)
         self.assertEqual(0, self.document_1['latest_comment']['votes'])
 
+    def test_applying_defaults_does_not_modify_schema_schema(self):
+        blog_post_schema._doc_spec['latest_comment']['default'] = {}
+        copy_of_doc_spec = deepcopy(blog_post_schema._doc_spec)
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEquals(copy_of_doc_spec['latest_comment']['default'], blog_post_schema._doc_spec['latest_comment']['default'])
+
     def test_default_array_schema_value(self):
         blog_post_schema.apply_defaults(self.document_1)
         for i in range(3):
             self.assertEqual(0, self.document_1['most_popular_comments'][i]['votes'])
+
+    def test_applying_defaults_does_not_modify_schema_array(self):
+        blog_post_schema._doc_spec['most_popular_comments']['default'] = [{}, {}, {}]
+        copy_of_doc_spec = deepcopy(blog_post_schema._doc_spec)
+        blog_post_schema.apply_defaults(self.document_1)
+        self.assertEquals(copy_of_doc_spec['most_popular_comments']['default'], blog_post_schema._doc_spec['most_popular_comments']['default'])
 

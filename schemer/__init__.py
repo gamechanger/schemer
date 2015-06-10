@@ -35,7 +35,7 @@ class Schema(object):
                     if callable(default):
                         instance[field] = default()
                     else:
-                        instance[field] = default
+                        instance[field] = copy.deepcopy(default)
             # Determine if a value already exists for the field
             if field in instance:
                 value = instance[field]
