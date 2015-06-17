@@ -3,6 +3,7 @@
 Powerful schema-based validation of Python dicts.
 
 [![build status](https://travis-ci.org/gamechanger/schemer.png?branch=master "Build status")](https://travis-ci.org/gamechanger/schemer)
+[![Github License](https://img.shields.io/github/license/gamechanger/schemer.svg)](https://github.com/gamechanger/schemer/blob/master/LICENSE)
 
 # Installation
 
