@@ -135,12 +135,34 @@ class TestIsEmail(unittest.TestCase):
         self.validator = is_email()
 
     def test_valid(self):
-        self.assertIsNone(self.validator('s.balmer@hotmail.com'))
+        valid_emails = [
+            's.balmer@hotmail.com',
+            'a.dot@domain.com',
+            'a+plus@domain.com',
+            'at@at@domain.com',
+            'local@domain.newtld',
+            'local@domain.verylongtld',
+            'local@domain'
+        ]
+
+        for email in valid_emails:
+            self.assertIsNone(self.validator(email))
 
     def test_invalid(self):
-        self.assertEqual(
-            "'notanemail' is not a valid email address",
-            self.validator("notanemail"))
+        invalid_emails = [
+            '.start@dot.com',
+            'end.@dot.com',
+            'double..dot@dot.com',
+            'local@.start.com',
+            'local@end.',
+            'local@double..dot.com',
+            '@no.local',
+            'no.domain@',
+            'notanemail'
+        ]
+
+        for email in invalid_emails:
+            self.assertEqual(self.validator(email), "'{email}' is not a valid email address".format(email=email))
 
 
 class TestIsUrl(unittest.TestCase):
