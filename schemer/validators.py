@@ -110,16 +110,16 @@ def is_email():
     Validates that a fields value is a valid email address.
     """
 
-    part = (
-        ur'\b'          # Start part boundary
-        ur'(?!^\.)'     # Does not start with a dot
-        ur'(?!\.$)'     # Does not end with a dot
-        ur'(?!.*\.\.)'  # Does not have double dots anywhere
-        ur'\S+'         # One or more non-whitespace characters
-        ur'\b'          # End part boundary
+    email = (
+        ur'(?!^\.)'     # No dot at start
+        ur'(?!.*\.@)'   # No dot before at sign
+        ur'(?!.*@\.)'   # No dot after at sign
+        ur'(?!.*\.$)'   # No dot at the end
+        ur'(?!.*\.\.)'  # No double dots anywhere
+        ur'^\S+'        # Starts with one or more non-whitespace characters
+        ur'@'           # Contains an at sign
+        ur'\S+$'        # Ends with one or more non-whitespace characters
     )
-
-    email = ur'^{part}@{part}$'.format(part=part)
 
     regex = re.compile(email, re.IGNORECASE | re.UNICODE)
 
